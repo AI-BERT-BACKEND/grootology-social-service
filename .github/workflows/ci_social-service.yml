@@ -132,6 +132,8 @@ jobs:
         if: always()
         with:
           name: jacoco-report-social-run${{ github.run_number }}-${{ github.sha }}
+          path: target/site/jacoco/
+          retention-days: 7
 
       - name: Add JaCoCo report link to summary
         if: always()
