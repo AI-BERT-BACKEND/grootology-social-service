@@ -17,6 +17,9 @@ management:
 jwt:
   secret: ${JWT_SECRET}
 
+app:
+  base-url: ${APP_BASE_URL:http://localhost:8085}
+
 ---
 spring:
   config:
