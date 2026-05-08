@@ -27,7 +27,6 @@ public class InvitationService implements InvitationUseCase {
     public InviteResponseDTO getOrCreateReferralLink(UUID userId) {
         Invitation invitation = invitationRepository.findByInviterId(userId)
                 .orElseGet(() -> invitationRepository.save(Invitation.builder()
-                        .id(UUID.randomUUID())
                         .inviterId(userId)
                         .referralCode(UUID.randomUUID().toString())
                         .used(false)
@@ -45,7 +44,6 @@ public class InvitationService implements InvitationUseCase {
 
         Invitation invitation = invitationRepository.findByInviterId(userId)
                 .orElseGet(() -> invitationRepository.save(Invitation.builder()
-                        .id(UUID.randomUUID())
                         .inviterId(userId)
                         .referralCode(UUID.randomUUID().toString())
                         .used(false)
