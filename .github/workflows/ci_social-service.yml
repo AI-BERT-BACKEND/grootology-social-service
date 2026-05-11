@@ -211,7 +211,7 @@ jobs:
           imageToDeploy: ghcr.io/ai-bert-backend/grootology-social-service:qa-latest
           registryUrl: ghcr.io
           registryUsername: ${{ github.actor }}
-          registryPassword: ${{ secrets.GITHUB_TOKEN }}
+          registryPassword: ${{ secrets.GHCR_TOKEN }}
 
   deploy-prod:
     name: Deploy to PROD
@@ -236,4 +236,4 @@ jobs:
           imageToDeploy: ghcr.io/ai-bert-backend/grootology-social-service:prod-latest
           registryUrl: ghcr.io
           registryUsername: ${{ github.actor }}
-          registryPassword: ${{ secrets.GITHUB_TOKEN }}
+          registryPassword: ${{ secrets.GHCR_TOKEN }}
