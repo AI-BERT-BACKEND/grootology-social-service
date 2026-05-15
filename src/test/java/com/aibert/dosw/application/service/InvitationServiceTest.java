@@ -61,4 +61,39 @@ class InvitationServiceTest {
         assertTrue(response.getReferralLink().contains("existing-code"));
         verify(invitationRepository, never()).save(any());
     }
+
+    @Test
+    void sendInvitations_exitoso_enviaCorreos() {
+        com.aibert.dosw.application.dto.request.InviteFriendsRequestDTO request =
+                mock(com.aibert.dosw.application.dto.request.InviteFriendsRequestDTO.class);
+        when(request.getEmails()).thenReturn(java.util.List.of("amigo@mail.escuelaing.edu.co"));
+
+        Invitation invitation = Invitation.builder()
+                .inviterId(userId).referralCode("code123").used(false).build();
+        when(invitationRepository.findByInviterId(userId)).thenReturn(Optional.of(invitation));
+        doNothing().when(emailService).sendInvitationEmail(any(), any(), any());
+
+        assertDoesNotThrow(() -> invitationService.sendInvitations(userId, request));
+        verify(emailService).sendInvitationEmail(any(), any(), any());
+    }
+
+    @Test
+    void sendInvitations_listaVacia_noEnviaCorreos() {
+        com.aibert.dosw.application.dto.request.InviteFriendsRequestDTO request =
+                mock(com.aibert.dosw.application.dto.request.InviteFriendsRequestDTO.class);
+        when(request.getEmails()).thenReturn(java.util.List.of());
+
+        assertDoesNotThrow(() -> invitationService.sendInvitations(userId, request));
+        verify(emailService, never()).sendInvitationEmail(any(), any(), any());
+    }
+
+    @Test
+    void sendInvitations_listaNull_noEnviaCorreos() {
+        com.aibert.dosw.application.dto.request.InviteFriendsRequestDTO request =
+                mock(com.aibert.dosw.application.dto.request.InviteFriendsRequestDTO.class);
+        when(request.getEmails()).thenReturn(null);
+
+        assertDoesNotThrow(() -> invitationService.sendInvitations(userId, request));
+        verify(emailService, never()).sendInvitationEmail(any(), any(), any());
+    }
 }
