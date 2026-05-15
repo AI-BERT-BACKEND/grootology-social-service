@@ -249,7 +249,7 @@ El diagrama de clases muestra la estructura interna del microservicio y cómo se
 
 <div align="center">
 
-![Diagrama de Clases](docs/uml/Diagrama_de_Clases.png)
+![Diagrama_de_Clases.png](docs/uml/Diagrama_de_Clases1.png)
 
 </div>
 
@@ -261,7 +261,7 @@ El diagrama de componentes muestra la interacción entre los principales compone
 
 <div align="center">
 
-![Diagrama de Componentes](docs/uml/Diagrama_de_Componentes.png)
+![Diagrama_de_componentes.png](docs/uml/Diagrama_de_componentes.png)
 
 </div>
 
