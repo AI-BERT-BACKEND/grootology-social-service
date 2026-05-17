@@ -1,5 +1,6 @@
 package com.aibert.dosw.entrypoints.advice;
 
+import com.aibert.dosw.domain.exceptions.ConnectionRequestException;
 import com.aibert.dosw.domain.exceptions.InvalidInvitationException;
 import com.aibert.dosw.domain.exceptions.SessionNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -28,6 +29,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(InvalidInvitationException.class)
     public ResponseEntity<Map<String, String>> handleInvalidInvitation(InvalidInvitationException ex) {
+        return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()));
+    }
+
+    @ExceptionHandler(ConnectionRequestException.class)
+    public ResponseEntity<Map<String, String>> handleConnectionRequest(ConnectionRequestException ex) {
         return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()));
     }
 }
