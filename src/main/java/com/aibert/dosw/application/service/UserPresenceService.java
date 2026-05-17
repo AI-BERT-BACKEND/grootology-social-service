@@ -18,17 +18,19 @@ public class UserPresenceService implements UserPresenceUseCase {
     private final UserPresenceRepositoryPort presenceRepository;
 
     @Override
-    public UserPresenceResponseDTO heartbeat(UUID userId, String email) {
+    public UserPresenceResponseDTO heartbeat(UUID userId, String email, String name) {
         UserPresence updated = presenceRepository.findByUserId(userId)
                 .map(existing -> UserPresence.builder()
                         .id(existing.getId())
                         .userId(userId)
                         .email(email != null ? email : existing.getEmail())
+                        .name(name != null ? name : existing.getName())
                         .lastSeen(LocalDateTime.now())
                         .build())
                 .orElse(UserPresence.builder()
                         .userId(userId)
                         .email(email)
+                        .name(name)
                         .lastSeen(LocalDateTime.now())
                         .build());
 

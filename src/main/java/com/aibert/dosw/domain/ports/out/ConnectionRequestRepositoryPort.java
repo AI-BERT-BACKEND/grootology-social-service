@@ -13,4 +13,5 @@ public interface ConnectionRequestRepositoryPort {
     List<ConnectionRequest> findByReceiverIdAndStatus(UUID receiverId, ConnectionRequestStatus status);
     List<ConnectionRequest> findBySenderId(UUID senderId);
     boolean existsBySenderIdAndReceiverIdAndStatus(UUID senderId, UUID receiverId, ConnectionRequestStatus status);
+    boolean existsByEitherDirectionAndStatus(UUID userId1, UUID userId2, ConnectionRequestStatus status);
 }

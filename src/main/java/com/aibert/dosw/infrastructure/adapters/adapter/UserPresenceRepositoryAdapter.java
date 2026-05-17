@@ -7,8 +7,10 @@ import com.aibert.dosw.infrastructure.adapters.persistence.repository.UserPresen
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -30,5 +32,11 @@ public class UserPresenceRepositoryAdapter implements UserPresenceRepositoryPort
     @Override
     public boolean existsByEmail(String email) {
         return jpaRepository.existsByEmail(email);
+    }
+
+    @Override
+    public List<UserPresence> searchByNameOrEmail(String query, UUID excludeUserId) {
+        return jpaRepository.searchByNameOrEmail(query, excludeUserId)
+                .stream().map(mapper::toDomain).collect(Collectors.toList());
     }
 }

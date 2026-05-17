@@ -7,23 +7,21 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "user_presence")
+@Table(name = "friendships")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
-public class UserPresenceEntity {
+public class FriendshipEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(nullable = false, unique = true)
-    private UUID userId;
-
-    private String name;
-
-    @Column(unique = true)
-    private String email;
+    @Column(nullable = false)
+    private UUID userId1;
 
     @Column(nullable = false)
-    private LocalDateTime lastSeen;
+    private UUID userId2;
+
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
 }

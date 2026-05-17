@@ -5,8 +5,10 @@ import com.aibert.dosw.application.dto.response.ConnectionRequestResponseDTO;
 import com.aibert.dosw.domain.exceptions.ConnectionRequestException;
 import com.aibert.dosw.domain.model.user.ConnectionRequest;
 import com.aibert.dosw.domain.model.user.ConnectionRequestStatus;
+import com.aibert.dosw.domain.model.user.Friendship;
 import com.aibert.dosw.domain.ports.in.ConnectionRequestUseCase;
 import com.aibert.dosw.domain.ports.out.ConnectionRequestRepositoryPort;
+import com.aibert.dosw.domain.ports.out.FriendshipRepositoryPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +22,7 @@ import java.util.stream.Collectors;
 public class ConnectionRequestService implements ConnectionRequestUseCase {
 
     private final ConnectionRequestRepositoryPort requestRepository;
+    private final FriendshipRepositoryPort friendshipRepository;
 
     @Override
     public ConnectionRequestResponseDTO sendRequest(UUID senderId, SendConnectionRequestDTO dto) {
@@ -29,7 +32,11 @@ public class ConnectionRequestService implements ConnectionRequestUseCase {
             throw new ConnectionRequestException("No puedes enviarte una solicitud de conexión a ti mismo");
         }
 
-        if (requestRepository.existsBySenderIdAndReceiverIdAndStatus(senderId, receiverId, ConnectionRequestStatus.PENDING)) {
+        if (friendshipRepository.existsByUserIds(senderId, receiverId)) {
+            throw new ConnectionRequestException("Ya son amigos");
+        }
+
+        if (requestRepository.existsByEitherDirectionAndStatus(senderId, receiverId, ConnectionRequestStatus.PENDING)) {
             throw new ConnectionRequestException("Ya existe una solicitud de conexión pendiente con este usuario");
         }
 
@@ -55,13 +62,21 @@ public class ConnectionRequestService implements ConnectionRequestUseCase {
             throw new ConnectionRequestException("La solicitud ya fue procesada");
         }
 
-        return toDTO(requestRepository.save(ConnectionRequest.builder()
+        ConnectionRequestResponseDTO result = toDTO(requestRepository.save(ConnectionRequest.builder()
                 .id(existing.getId())
                 .senderId(existing.getSenderId())
                 .receiverId(existing.getReceiverId())
                 .status(ConnectionRequestStatus.ACCEPTED)
                 .sentAt(existing.getSentAt())
                 .build()));
+
+        friendshipRepository.save(Friendship.builder()
+                .userId1(existing.getSenderId())
+                .userId2(existing.getReceiverId())
+                .createdAt(LocalDateTime.now())
+                .build());
+
+        return result;
     }
 
     @Override

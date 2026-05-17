@@ -11,6 +11,7 @@ import java.util.UUID;
 public class UserPresence {
     private UUID id;
     private UUID userId;
+    private String name;
     private String email;
     private LocalDateTime lastSeen;
 

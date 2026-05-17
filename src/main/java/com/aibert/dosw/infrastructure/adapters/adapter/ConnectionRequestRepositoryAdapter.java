@@ -46,4 +46,9 @@ public class ConnectionRequestRepositoryAdapter implements ConnectionRequestRepo
     public boolean existsBySenderIdAndReceiverIdAndStatus(UUID senderId, UUID receiverId, ConnectionRequestStatus status) {
         return jpaRepository.existsBySenderIdAndReceiverIdAndStatus(senderId, receiverId, status);
     }
+
+    @Override
+    public boolean existsByEitherDirectionAndStatus(UUID userId1, UUID userId2, ConnectionRequestStatus status) {
+        return jpaRepository.existsByEitherDirectionAndStatus(userId1, userId2, status);
+    }
 }

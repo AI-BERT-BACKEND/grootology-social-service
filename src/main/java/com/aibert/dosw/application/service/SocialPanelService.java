@@ -55,9 +55,9 @@ public class SocialPanelService implements SocialPanelUseCase {
                 SocialActionItemResponseDTO.builder()
                         .action(SocialAction.BUSCAR)
                         .label("Buscar")
-                        .endpoint("/api/social/users/" + userId + "/panel?action=BUSCAR")
+                        .endpoint("/api/social/users/search?requesterId=" + userId + "&q=")
                         .method("GET")
-                        .description("Consulta del panel social orientada a descubrimiento.")
+                        .description("Búsqueda de usuarios registrados en AI.BERT por nombre o correo institucional.")
                         .build(),
                 SocialActionItemResponseDTO.builder()
                         .action(SocialAction.LISTAR)
