@@ -1,6 +1,7 @@
 package com.aibert.dosw.application.service;
 
 import com.aibert.dosw.application.dto.response.FriendshipResponseDTO;
+import com.aibert.dosw.domain.exceptions.ConnectionRequestException;
 import com.aibert.dosw.domain.model.user.Friendship;
 import com.aibert.dosw.domain.model.user.OnlineStatus;
 import com.aibert.dosw.domain.model.user.UserPresence;
@@ -40,6 +41,7 @@ class FriendshipServiceTest {
         return UserPresence.builder()
                 .id(UUID.randomUUID()).userId(uid)
                 .name("Nombre").email("amigo@test.com")
+                .avatarUrl("https://cdn.test.com/avatar.jpg")
                 .lastSeen(lastSeen).build();
     }
 
@@ -57,6 +59,7 @@ class FriendshipServiceTest {
         assertEquals(friendId, result.get(0).getFriendId());
         assertEquals(OnlineStatus.ONLINE, result.get(0).getPresenceStatus().getStatus());
         assertEquals("Nombre", result.get(0).getFriendName());
+        assertEquals("https://cdn.test.com/avatar.jpg", result.get(0).getFriendAvatarUrl());
     }
 
     @Test
@@ -76,10 +79,9 @@ class FriendshipServiceTest {
     @Test
     void listFriends_filtroOnline_retornaSoloOnline() {
         UUID friendOffline = UUID.randomUUID();
-        Friendship f1 = buildFriendship(userId, friendId);
-        Friendship f2 = buildFriendship(userId, friendOffline);
-
-        when(friendshipRepository.findByUserId(userId)).thenReturn(List.of(f1, f2));
+        when(friendshipRepository.findByUserId(userId)).thenReturn(List.of(
+                buildFriendship(userId, friendId),
+                buildFriendship(userId, friendOffline)));
         when(userPresenceRepository.findByUserId(friendId))
                 .thenReturn(Optional.of(buildPresence(friendId, LocalDateTime.now().minusMinutes(1))));
         when(userPresenceRepository.findByUserId(friendOffline))
@@ -94,10 +96,9 @@ class FriendshipServiceTest {
     @Test
     void listFriends_filtroOffline_retornaSoloOffline() {
         UUID friendOffline = UUID.randomUUID();
-        Friendship f1 = buildFriendship(userId, friendId);
-        Friendship f2 = buildFriendship(userId, friendOffline);
-
-        when(friendshipRepository.findByUserId(userId)).thenReturn(List.of(f1, f2));
+        when(friendshipRepository.findByUserId(userId)).thenReturn(List.of(
+                buildFriendship(userId, friendId),
+                buildFriendship(userId, friendOffline)));
         when(userPresenceRepository.findByUserId(friendId))
                 .thenReturn(Optional.of(buildPresence(friendId, LocalDateTime.now().minusMinutes(1))));
         when(userPresenceRepository.findByUserId(friendOffline))
@@ -110,27 +111,40 @@ class FriendshipServiceTest {
     }
 
     @Test
-    void listFriends_sinPresenciaRegistrada_retornaOffline() {
-        Friendship f = buildFriendship(userId, friendId);
-
-        when(friendshipRepository.findByUserId(userId)).thenReturn(List.of(f));
+    void listFriends_sinPresenciaRegistrada_retornaOfflineYSinAvatar() {
+        when(friendshipRepository.findByUserId(userId)).thenReturn(List.of(buildFriendship(userId, friendId)));
         when(userPresenceRepository.findByUserId(friendId)).thenReturn(Optional.empty());
 
         List<FriendshipResponseDTO> result = friendshipService.listFriends(userId, null);
 
         assertEquals(1, result.size());
         assertEquals(OnlineStatus.OFFLINE, result.get(0).getPresenceStatus().getStatus());
-        assertNull(result.get(0).getFriendName());
-        assertNull(result.get(0).getFriendEmail());
+        assertNull(result.get(0).getFriendAvatarUrl());
     }
 
     @Test
     void listFriends_listaVacia_retornaVacio() {
         when(friendshipRepository.findByUserId(userId)).thenReturn(List.of());
 
-        List<FriendshipResponseDTO> result = friendshipService.listFriends(userId, null);
-
-        assertTrue(result.isEmpty());
+        assertTrue(friendshipService.listFriends(userId, null).isEmpty());
         verifyNoInteractions(userPresenceRepository);
+    }
+
+    @Test
+    void removeFriend_existeAmistad_elimina() {
+        when(friendshipRepository.existsByUserIds(userId, friendId)).thenReturn(true);
+        doNothing().when(friendshipRepository).deleteByUserIds(userId, friendId);
+
+        assertDoesNotThrow(() -> friendshipService.removeFriend(userId, friendId));
+        verify(friendshipRepository).deleteByUserIds(userId, friendId);
+    }
+
+    @Test
+    void removeFriend_noExisteAmistad_lanzaExcepcion() {
+        when(friendshipRepository.existsByUserIds(userId, friendId)).thenReturn(false);
+
+        assertThrows(ConnectionRequestException.class,
+                () -> friendshipService.removeFriend(userId, friendId));
+        verify(friendshipRepository, never()).deleteByUserIds(any(), any());
     }
 }

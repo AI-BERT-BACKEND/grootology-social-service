@@ -10,6 +10,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -29,27 +30,34 @@ class UserPresenceControllerTest {
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Test
-    void heartbeat_retorna200ConEstado() throws Exception {
+    void heartbeat_retorna200ConEstadoYAvatar() throws Exception {
         UUID userId = UUID.randomUUID();
         UserPresenceResponseDTO dto = UserPresenceResponseDTO.builder()
-                .userId(userId).status(OnlineStatus.ONLINE).lastSeen(LocalDateTime.now()).build();
+                .userId(userId).status(OnlineStatus.ONLINE)
+                .lastSeen(LocalDateTime.now())
+                .avatarUrl("https://cdn.test.com/avatar.jpg")
+                .build();
 
-        when(useCase.heartbeat(eq(userId), any(), any())).thenReturn(dto);
+        when(useCase.heartbeat(eq(userId), any(), any(), any())).thenReturn(dto);
+
+        Map<String, String> body = new HashMap<>();
+        body.put("email", "user@test.com");
+        body.put("name", "Juan");
+        body.put("avatarUrl", "https://cdn.test.com/avatar.jpg");
 
         mockMvc.perform(put("/api/social/users/{userId}/heartbeat", userId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(Map.of("email", "user@test.com", "name", "Juan"))))
+                        .content(mapper.writeValueAsString(body)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("ONLINE"));
+                .andExpect(jsonPath("$.status").value("ONLINE"))
+                .andExpect(jsonPath("$.avatarUrl").value("https://cdn.test.com/avatar.jpg"));
     }
 
     @Test
     void getStatus_retorna200ConEstado() throws Exception {
         UUID userId = UUID.randomUUID();
-        UserPresenceResponseDTO dto = UserPresenceResponseDTO.builder()
-                .userId(userId).status(OnlineStatus.OFFLINE).build();
-
-        when(useCase.getStatus(userId)).thenReturn(dto);
+        when(useCase.getStatus(userId)).thenReturn(UserPresenceResponseDTO.builder()
+                .userId(userId).status(OnlineStatus.OFFLINE).build());
 
         mockMvc.perform(get("/api/social/users/{userId}/status", userId))
                 .andExpect(status().isOk())

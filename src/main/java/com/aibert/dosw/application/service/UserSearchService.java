@@ -39,10 +39,12 @@ public class UserSearchService implements UserSearchUseCase {
                 .userId(u.getUserId())
                 .name(u.getName())
                 .email(u.getEmail())
+                .avatarUrl(u.getAvatarUrl())
                 .presenceStatus(UserPresenceResponseDTO.builder()
                         .userId(u.getUserId())
                         .status(u.getStatus())
                         .lastSeen(u.getLastSeen())
+                        .avatarUrl(u.getAvatarUrl())
                         .build())
                 .relationshipStatus(determineRelationship(requesterId, u.getUserId()))
                 .build();

@@ -12,6 +12,7 @@ public class UserSearchResultDTO {
     private UUID userId;
     private String name;
     private String email;
+    private String avatarUrl;
     private UserPresenceResponseDTO presenceStatus;
     private RelationshipStatus relationshipStatus;
 }

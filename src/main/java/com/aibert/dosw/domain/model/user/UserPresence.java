@@ -13,6 +13,7 @@ public class UserPresence {
     private UUID userId;
     private String name;
     private String email;
+    private String avatarUrl;
     private LocalDateTime lastSeen;
 
     public OnlineStatus getStatus() {

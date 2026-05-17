@@ -33,4 +33,9 @@ public class FriendshipRepositoryAdapter implements FriendshipRepositoryPort {
     public boolean existsByUserIds(UUID userId1, UUID userId2) {
         return jpaRepository.existsByUserIds(userId1, userId2);
     }
+
+    @Override
+    public void deleteByUserIds(UUID userId1, UUID userId2) {
+        jpaRepository.deleteByUserIds(userId1, userId2);
+    }
 }

@@ -8,4 +8,5 @@ import java.util.UUID;
 
 public interface FriendshipUseCase {
     List<FriendshipResponseDTO> listFriends(UUID userId, OnlineStatus statusFilter);
+    void removeFriend(UUID userId, UUID friendId);
 }

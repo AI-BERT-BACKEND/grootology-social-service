@@ -21,6 +21,9 @@ jwt:
 
 app:
   base-url: ${APP_BASE_URL:http://localhost:8085}
+  referral:
+    points-per-referral: ${REFERRAL_POINTS:50}
+    weekly-limit: ${REFERRAL_WEEKLY_LIMIT:500}
 
 ---
 spring:

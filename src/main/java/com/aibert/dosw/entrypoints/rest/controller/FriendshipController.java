@@ -23,4 +23,12 @@ public class FriendshipController {
             @RequestParam(required = false) OnlineStatus status) {
         return ResponseEntity.ok(friendshipUseCase.listFriends(userId, status));
     }
+
+    @DeleteMapping("/{userId}/{friendId}")
+    public ResponseEntity<Void> removeFriend(
+            @PathVariable UUID userId,
+            @PathVariable UUID friendId) {
+        friendshipUseCase.removeFriend(userId, friendId);
+        return ResponseEntity.noContent().build();
+    }
 }
