@@ -31,6 +31,7 @@ class UserPresenceServiceTest {
         return UserPresence.builder()
                 .id(id).userId(userId)
                 .name("Juan").email("juan@test.com")
+                .avatarUrl("https://cdn.test.com/avatar.jpg")
                 .lastSeen(lastSeen).build();
     }
 
@@ -38,10 +39,9 @@ class UserPresenceServiceTest {
     void heartbeat_usuarioNuevo_creaPresencia() {
         UUID presenceId = UUID.randomUUID();
         when(presenceRepository.findByUserId(userId)).thenReturn(Optional.empty());
-        when(presenceRepository.save(any())).thenReturn(
-                buildPresence(presenceId, LocalDateTime.now()));
+        when(presenceRepository.save(any())).thenReturn(buildPresence(presenceId, LocalDateTime.now()));
 
-        UserPresenceResponseDTO result = userPresenceService.heartbeat(userId, "juan@test.com", "Juan");
+        UserPresenceResponseDTO result = userPresenceService.heartbeat(userId, "juan@test.com", "Juan", null);
 
         assertNotNull(result);
         verify(presenceRepository).save(any());
@@ -56,26 +56,28 @@ class UserPresenceServiceTest {
         when(presenceRepository.findByUserId(userId)).thenReturn(Optional.of(existing));
         when(presenceRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        userPresenceService.heartbeat(userId, "juan@test.com", "Juan");
+        userPresenceService.heartbeat(userId, "juan@test.com", "Juan", "https://cdn.test.com/nuevo.jpg");
 
         ArgumentCaptor<UserPresence> captor = ArgumentCaptor.forClass(UserPresence.class);
         verify(presenceRepository).save(captor.capture());
         assertTrue(captor.getValue().getLastSeen().isAfter(oldLastSeen));
         assertEquals(presenceId, captor.getValue().getId());
+        assertEquals("https://cdn.test.com/nuevo.jpg", captor.getValue().getAvatarUrl());
     }
 
     @Test
-    void heartbeat_emailNulo_conservaEmailExistente() {
+    void heartbeat_camposNulos_conservaDatosExistentes() {
         UserPresence existing = buildPresence(UUID.randomUUID(), LocalDateTime.now().minusMinutes(10));
         when(presenceRepository.findByUserId(userId)).thenReturn(Optional.of(existing));
         when(presenceRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        userPresenceService.heartbeat(userId, null, null);
+        userPresenceService.heartbeat(userId, null, null, null);
 
         ArgumentCaptor<UserPresence> captor = ArgumentCaptor.forClass(UserPresence.class);
         verify(presenceRepository).save(captor.capture());
         assertEquals("juan@test.com", captor.getValue().getEmail());
         assertEquals("Juan", captor.getValue().getName());
+        assertEquals("https://cdn.test.com/avatar.jpg", captor.getValue().getAvatarUrl());
     }
 
     @Test
@@ -87,6 +89,7 @@ class UserPresenceServiceTest {
 
         assertEquals(OnlineStatus.ONLINE, result.getStatus());
         assertEquals(userId, result.getUserId());
+        assertEquals("https://cdn.test.com/avatar.jpg", result.getAvatarUrl());
     }
 
     @Test
@@ -94,9 +97,7 @@ class UserPresenceServiceTest {
         UserPresence presence = buildPresence(UUID.randomUUID(), LocalDateTime.now().minusMinutes(10));
         when(presenceRepository.findByUserId(userId)).thenReturn(Optional.of(presence));
 
-        UserPresenceResponseDTO result = userPresenceService.getStatus(userId);
-
-        assertEquals(OnlineStatus.OFFLINE, result.getStatus());
+        assertEquals(OnlineStatus.OFFLINE, userPresenceService.getStatus(userId).getStatus());
     }
 
     @Test
@@ -108,5 +109,6 @@ class UserPresenceServiceTest {
         assertEquals(OnlineStatus.OFFLINE, result.getStatus());
         assertEquals(userId, result.getUserId());
         assertNull(result.getLastSeen());
+        assertNull(result.getAvatarUrl());
     }
 }
