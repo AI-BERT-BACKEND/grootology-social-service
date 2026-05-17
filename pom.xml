@@ -21,6 +21,11 @@
         <sonar.projectKey>AI-BERT-BACKEND_grootology-social-service</sonar.projectKey>
         <sonar.organization>ai-bert-backend</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+        <sonar.coverage.exclusions>
+            **/infrastructure/adapters/persistence/entity/**,
+            **/application/dto/**,
+            **/domain/model/**
+        </sonar.coverage.exclusions>
     </properties>
 
     <dependencies>

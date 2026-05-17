@@ -100,6 +100,45 @@ class SocialPanelServiceTest {
     }
 
     @Test
+    void getPanel_buscar_retornaDisponibilidad() {
+        when(userPresenceUseCase.getStatus(userId)).thenReturn(UserPresenceResponseDTO.builder()
+                .userId(userId).status(OnlineStatus.OFFLINE).build());
+        when(availabilityUseCase.getConfig(userId)).thenReturn(AvailabilityConfig.builder()
+                .userId(userId).visibility(VisibilityLevel.PUBLIC).build());
+
+        SocialPanelResponseDTO response = socialPanelService.getPanel(userId, SocialAction.BUSCAR);
+
+        assertEquals(SocialAction.BUSCAR, response.getSelectedAction());
+        assertNotNull(response.getAvailability());
+        assertNull(response.getInvite());
+        assertNull(response.getPendingConnectionRequests());
+        assertNull(response.getSessions());
+        assertNull(response.getChatStatus());
+        verifyNoInteractions(invitationUseCase, connectionRequestUseCase, studySessionUseCase);
+    }
+
+    @Test
+    void getPanel_listar_retornaSesiones() {
+        when(userPresenceUseCase.getStatus(userId)).thenReturn(UserPresenceResponseDTO.builder()
+                .userId(userId).status(OnlineStatus.OFFLINE).build());
+        when(studySessionUseCase.getSessionsForUser(userId)).thenReturn(List.of(
+                StudySessionResponseDTO.builder()
+                        .id(UUID.randomUUID()).topic("Álgebra")
+                        .scheduledAt(LocalDateTime.now().plusDays(2))
+                        .durationHours(1.5)
+                        .participantIds(List.of(userId)).build()));
+
+        SocialPanelResponseDTO response = socialPanelService.getPanel(userId, SocialAction.LISTAR);
+
+        assertEquals(SocialAction.LISTAR, response.getSelectedAction());
+        assertEquals(1, response.getSessions().size());
+        assertNull(response.getInvite());
+        assertNull(response.getAvailability());
+        assertNull(response.getChatStatus());
+        verifyNoInteractions(invitationUseCase, connectionRequestUseCase, availabilityUseCase);
+    }
+
+    @Test
     void getPanel_chat_retornaEstadoChatSinConsultarOtrosModulos() {
         when(userPresenceUseCase.getStatus(userId)).thenReturn(UserPresenceResponseDTO.builder()
                 .userId(userId).status(OnlineStatus.OFFLINE).build());

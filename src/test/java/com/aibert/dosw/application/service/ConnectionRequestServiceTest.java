@@ -15,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -31,6 +32,12 @@ class ConnectionRequestServiceTest {
 
     private final UUID senderId = UUID.randomUUID();
     private final UUID receiverId = UUID.randomUUID();
+
+    private ConnectionRequest buildRequest(UUID id, ConnectionRequestStatus status) {
+        return ConnectionRequest.builder()
+                .id(id).senderId(senderId).receiverId(receiverId)
+                .status(status).sentAt(LocalDateTime.now()).build();
+    }
 
     @Test
     void sendRequest_autoSolicitud_lanzaExcepcion() {
@@ -73,9 +80,7 @@ class ConnectionRequestServiceTest {
         when(friendshipRepository.existsByUserIds(senderId, receiverId)).thenReturn(false);
         when(requestRepository.existsByEitherDirectionAndStatus(senderId, receiverId, ConnectionRequestStatus.PENDING))
                 .thenReturn(false);
-        when(requestRepository.save(any())).thenReturn(ConnectionRequest.builder()
-                .id(UUID.randomUUID()).senderId(senderId).receiverId(receiverId)
-                .status(ConnectionRequestStatus.PENDING).sentAt(LocalDateTime.now()).build());
+        when(requestRepository.save(any())).thenReturn(buildRequest(UUID.randomUUID(), ConnectionRequestStatus.PENDING));
 
         ConnectionRequestResponseDTO result = connectionRequestService.sendRequest(senderId, dto);
 
@@ -87,14 +92,8 @@ class ConnectionRequestServiceTest {
     @Test
     void acceptRequest_creaAmistad() {
         UUID requestId = UUID.randomUUID();
-        ConnectionRequest existing = ConnectionRequest.builder()
-                .id(requestId).senderId(senderId).receiverId(receiverId)
-                .status(ConnectionRequestStatus.PENDING).sentAt(LocalDateTime.now()).build();
-
-        when(requestRepository.findById(requestId)).thenReturn(Optional.of(existing));
-        when(requestRepository.save(any())).thenReturn(ConnectionRequest.builder()
-                .id(requestId).senderId(senderId).receiverId(receiverId)
-                .status(ConnectionRequestStatus.ACCEPTED).sentAt(existing.getSentAt()).build());
+        when(requestRepository.findById(requestId)).thenReturn(Optional.of(buildRequest(requestId, ConnectionRequestStatus.PENDING)));
+        when(requestRepository.save(any())).thenReturn(buildRequest(requestId, ConnectionRequestStatus.ACCEPTED));
         when(friendshipRepository.save(any())).thenReturn(Friendship.builder()
                 .id(UUID.randomUUID()).userId1(senderId).userId2(receiverId)
                 .createdAt(LocalDateTime.now()).build());
@@ -108,33 +107,73 @@ class ConnectionRequestServiceTest {
     @Test
     void acceptRequest_permisoIncorrecto_lanzaExcepcion() {
         UUID requestId = UUID.randomUUID();
-        UUID otroUsuario = UUID.randomUUID();
-        ConnectionRequest existing = ConnectionRequest.builder()
-                .id(requestId).senderId(senderId).receiverId(receiverId)
-                .status(ConnectionRequestStatus.PENDING).sentAt(LocalDateTime.now()).build();
-
-        when(requestRepository.findById(requestId)).thenReturn(Optional.of(existing));
+        when(requestRepository.findById(requestId)).thenReturn(Optional.of(buildRequest(requestId, ConnectionRequestStatus.PENDING)));
 
         assertThrows(ConnectionRequestException.class,
-                () -> connectionRequestService.acceptRequest(requestId, otroUsuario));
+                () -> connectionRequestService.acceptRequest(requestId, UUID.randomUUID()));
+        verifyNoInteractions(friendshipRepository);
+    }
+
+    @Test
+    void acceptRequest_yaFueProcesada_lanzaExcepcion() {
+        UUID requestId = UUID.randomUUID();
+        when(requestRepository.findById(requestId)).thenReturn(Optional.of(buildRequest(requestId, ConnectionRequestStatus.ACCEPTED)));
+
+        assertThrows(ConnectionRequestException.class,
+                () -> connectionRequestService.acceptRequest(requestId, receiverId));
         verifyNoInteractions(friendshipRepository);
     }
 
     @Test
     void rejectRequest_exitoso_noCreaAmistad() {
         UUID requestId = UUID.randomUUID();
-        ConnectionRequest existing = ConnectionRequest.builder()
-                .id(requestId).senderId(senderId).receiverId(receiverId)
-                .status(ConnectionRequestStatus.PENDING).sentAt(LocalDateTime.now()).build();
-
-        when(requestRepository.findById(requestId)).thenReturn(Optional.of(existing));
-        when(requestRepository.save(any())).thenReturn(ConnectionRequest.builder()
-                .id(requestId).senderId(senderId).receiverId(receiverId)
-                .status(ConnectionRequestStatus.REJECTED).sentAt(existing.getSentAt()).build());
+        when(requestRepository.findById(requestId)).thenReturn(Optional.of(buildRequest(requestId, ConnectionRequestStatus.PENDING)));
+        when(requestRepository.save(any())).thenReturn(buildRequest(requestId, ConnectionRequestStatus.REJECTED));
 
         ConnectionRequestResponseDTO result = connectionRequestService.rejectRequest(requestId, receiverId);
 
         assertEquals(ConnectionRequestStatus.REJECTED, result.getStatus());
         verifyNoInteractions(friendshipRepository);
+    }
+
+    @Test
+    void rejectRequest_permisoIncorrecto_lanzaExcepcion() {
+        UUID requestId = UUID.randomUUID();
+        when(requestRepository.findById(requestId)).thenReturn(Optional.of(buildRequest(requestId, ConnectionRequestStatus.PENDING)));
+
+        assertThrows(ConnectionRequestException.class,
+                () -> connectionRequestService.rejectRequest(requestId, UUID.randomUUID()));
+    }
+
+    @Test
+    void rejectRequest_yaFueProcesada_lanzaExcepcion() {
+        UUID requestId = UUID.randomUUID();
+        when(requestRepository.findById(requestId)).thenReturn(Optional.of(buildRequest(requestId, ConnectionRequestStatus.REJECTED)));
+
+        assertThrows(ConnectionRequestException.class,
+                () -> connectionRequestService.rejectRequest(requestId, receiverId));
+    }
+
+    @Test
+    void getPendingRequestsForUser_retornaLista() {
+        when(requestRepository.findByReceiverIdAndStatus(receiverId, ConnectionRequestStatus.PENDING))
+                .thenReturn(List.of(buildRequest(UUID.randomUUID(), ConnectionRequestStatus.PENDING)));
+
+        List<ConnectionRequestResponseDTO> result = connectionRequestService.getPendingRequestsForUser(receiverId);
+
+        assertEquals(1, result.size());
+        assertEquals(ConnectionRequestStatus.PENDING, result.get(0).getStatus());
+    }
+
+    @Test
+    void getSentRequestsByUser_retornaLista() {
+        when(requestRepository.findBySenderId(senderId))
+                .thenReturn(List.of(
+                        buildRequest(UUID.randomUUID(), ConnectionRequestStatus.PENDING),
+                        buildRequest(UUID.randomUUID(), ConnectionRequestStatus.ACCEPTED)));
+
+        List<ConnectionRequestResponseDTO> result = connectionRequestService.getSentRequestsByUser(senderId);
+
+        assertEquals(2, result.size());
     }
 }

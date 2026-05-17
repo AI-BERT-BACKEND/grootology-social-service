@@ -1,5 +1,6 @@
 package com.aibert.dosw.entrypoints.advice;
 
+import com.aibert.dosw.domain.exceptions.ConnectionRequestException;
 import com.aibert.dosw.domain.exceptions.InvalidInvitationException;
 import com.aibert.dosw.domain.exceptions.SessionNotFoundException;
 import org.junit.jupiter.api.Test;
@@ -25,5 +26,13 @@ class GlobalExceptionHandlerTest {
     void handleInvalidInvitation_retorna400() {
         ResponseEntity<Map<String, String>> r = handler.handleInvalidInvitation(new InvalidInvitationException("error"));
         assertEquals(HttpStatus.BAD_REQUEST, r.getStatusCode());
+    }
+
+    @Test
+    void handleConnectionRequest_retorna400ConMensaje() {
+        ResponseEntity<Map<String, String>> r = handler.handleConnectionRequest(
+                new ConnectionRequestException("Ya son amigos"));
+        assertEquals(HttpStatus.BAD_REQUEST, r.getStatusCode());
+        assertEquals("Ya son amigos", r.getBody().get("error"));
     }
 }
