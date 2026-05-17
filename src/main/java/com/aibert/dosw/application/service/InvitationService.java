@@ -7,6 +7,7 @@ import com.aibert.dosw.domain.model.user.Invitation;
 import com.aibert.dosw.domain.ports.in.InvitationUseCase;
 import com.aibert.dosw.domain.ports.out.InvitationRepositoryPort;
 import com.aibert.dosw.domain.ports.out.SocialEmailServicePort;
+import com.aibert.dosw.domain.ports.out.UserPresenceRepositoryPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ public class InvitationService implements InvitationUseCase {
 
     private final InvitationRepositoryPort invitationRepository;
     private final SocialEmailServicePort emailService;
+    private final UserPresenceRepositoryPort userPresenceRepository;
 
     @Value("${app.base-url}")
     private String baseUrl;
@@ -34,7 +36,7 @@ public class InvitationService implements InvitationUseCase {
 
         return InviteResponseDTO.builder()
                 .referralLink(baseUrl + "/register?ref=" + invitation.getReferralCode())
-                .message("Comparte este enlace con tus amigos")
+                .message("Comparte este enlace con usuarios externos a AI.BERT")
                 .build();
     }
 
@@ -52,8 +54,10 @@ public class InvitationService implements InvitationUseCase {
         String link = baseUrl + "/register?ref=" + invitation.getReferralCode();
 
         for (String email : request.getEmails()) {
-            if (email.equals(userId.toString())) {
-                throw new InvalidInvitationException("No puedes invitarte a ti mismo");
+            if (userPresenceRepository.existsByEmail(email)) {
+                throw new InvalidInvitationException(
+                        "El correo " + email + " ya pertenece a un usuario registrado en AI.BERT. " +
+                        "Usa solicitudes de conexión en su lugar: POST /api/social/connections/{senderId}/request");
             }
             emailService.sendInvitationEmail(email, userId.toString(), link);
         }
