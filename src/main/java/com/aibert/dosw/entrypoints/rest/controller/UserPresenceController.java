@@ -21,7 +21,7 @@ public class UserPresenceController {
     public ResponseEntity<UserPresenceResponseDTO> heartbeat(
             @PathVariable UUID userId,
             @Valid @RequestBody HeartbeatRequestDTO request) {
-        return ResponseEntity.ok(userPresenceUseCase.heartbeat(userId, request.getEmail(), request.getName()));
+        return ResponseEntity.ok(userPresenceUseCase.heartbeat(userId, request.getEmail(), request.getName(), request.getAvatarUrl()));
     }
 
     @GetMapping("/{userId}/status")

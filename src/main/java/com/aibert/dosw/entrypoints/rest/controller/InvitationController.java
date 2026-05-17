@@ -1,7 +1,9 @@
 package com.aibert.dosw.entrypoints.rest.controller;
 
 import com.aibert.dosw.application.dto.request.InviteFriendsRequestDTO;
+import com.aibert.dosw.application.dto.request.RedeemReferralCodeRequestDTO;
 import com.aibert.dosw.application.dto.response.InviteResponseDTO;
+import com.aibert.dosw.application.dto.response.ReferralPointsResponseDTO;
 import com.aibert.dosw.domain.ports.in.InvitationUseCase;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,5 +31,12 @@ public class InvitationController {
             @Valid @RequestBody InviteFriendsRequestDTO request) {
         invitationUseCase.sendInvitations(userId, request);
         return ResponseEntity.ok(Map.of("message", "Invitaciones enviadas exitosamente."));
+    }
+
+    @PostMapping("/{code}/redeem")
+    public ResponseEntity<ReferralPointsResponseDTO> redeemCode(
+            @PathVariable String code,
+            @Valid @RequestBody RedeemReferralCodeRequestDTO request) {
+        return ResponseEntity.ok(invitationUseCase.redeemReferralCode(code, request.getNewUserId()));
     }
 }

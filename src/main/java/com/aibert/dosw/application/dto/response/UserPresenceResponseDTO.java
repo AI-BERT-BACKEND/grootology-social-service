@@ -13,4 +13,5 @@ public class UserPresenceResponseDTO {
     private UUID userId;
     private OnlineStatus status;
     private LocalDateTime lastSeen;
+    private String avatarUrl;
 }

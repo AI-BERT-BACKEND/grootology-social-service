@@ -18,19 +18,21 @@ public class UserPresenceService implements UserPresenceUseCase {
     private final UserPresenceRepositoryPort presenceRepository;
 
     @Override
-    public UserPresenceResponseDTO heartbeat(UUID userId, String email, String name) {
+    public UserPresenceResponseDTO heartbeat(UUID userId, String email, String name, String avatarUrl) {
         UserPresence updated = presenceRepository.findByUserId(userId)
                 .map(existing -> UserPresence.builder()
                         .id(existing.getId())
                         .userId(userId)
                         .email(email != null ? email : existing.getEmail())
                         .name(name != null ? name : existing.getName())
+                        .avatarUrl(avatarUrl != null ? avatarUrl : existing.getAvatarUrl())
                         .lastSeen(LocalDateTime.now())
                         .build())
                 .orElse(UserPresence.builder()
                         .userId(userId)
                         .email(email)
                         .name(name)
+                        .avatarUrl(avatarUrl)
                         .lastSeen(LocalDateTime.now())
                         .build());
 
@@ -53,6 +55,7 @@ public class UserPresenceService implements UserPresenceUseCase {
                 .userId(p.getUserId())
                 .status(p.getStatus())
                 .lastSeen(p.getLastSeen())
+                .avatarUrl(p.getAvatarUrl())
                 .build();
     }
 }

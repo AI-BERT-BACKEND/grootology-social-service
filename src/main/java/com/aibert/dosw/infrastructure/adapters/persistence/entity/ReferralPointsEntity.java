@@ -3,14 +3,14 @@ package com.aibert.dosw.infrastructure.adapters.persistence.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
-@Table(name = "user_presence")
+@Table(name = "referral_points")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
-public class UserPresenceEntity {
+public class ReferralPointsEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -19,13 +19,12 @@ public class UserPresenceEntity {
     @Column(nullable = false, unique = true)
     private UUID userId;
 
-    private String name;
-
-    @Column(unique = true)
-    private String email;
-
-    private String avatarUrl;
+    @Column(nullable = false)
+    private int totalPoints;
 
     @Column(nullable = false)
-    private LocalDateTime lastSeen;
+    private int weeklyPoints;
+
+    @Column(nullable = false)
+    private LocalDate weekStart;
 }

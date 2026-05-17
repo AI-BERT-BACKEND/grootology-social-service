@@ -12,9 +12,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 class FriendshipControllerTest {
@@ -27,8 +26,10 @@ class FriendshipControllerTest {
         return FriendshipResponseDTO.builder()
                 .id(UUID.randomUUID()).friendId(friendId)
                 .friendName("Amigo").friendEmail("amigo@test.com")
+                .friendAvatarUrl("https://cdn.test.com/avatar.jpg")
                 .presenceStatus(UserPresenceResponseDTO.builder()
-                        .userId(friendId).status(status).lastSeen(LocalDateTime.now()).build())
+                        .userId(friendId).status(status).lastSeen(LocalDateTime.now())
+                        .avatarUrl("https://cdn.test.com/avatar.jpg").build())
                 .since(LocalDateTime.now().minusDays(5))
                 .build();
     }
@@ -42,19 +43,30 @@ class FriendshipControllerTest {
         mockMvc.perform(get("/api/social/friends/{userId}", userId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].friendId").value(friendId.toString()))
+                .andExpect(jsonPath("$[0].friendAvatarUrl").value("https://cdn.test.com/avatar.jpg"))
                 .andExpect(jsonPath("$[0].presenceStatus.status").value("ONLINE"));
     }
 
     @Test
     void listFriends_conFiltroOnline_retornaSoloOnline() throws Exception {
         UUID userId = UUID.randomUUID();
-        UUID friendId = UUID.randomUUID();
         when(useCase.listFriends(userId, OnlineStatus.ONLINE))
-                .thenReturn(List.of(buildDTO(friendId, OnlineStatus.ONLINE)));
+                .thenReturn(List.of(buildDTO(UUID.randomUUID(), OnlineStatus.ONLINE)));
 
-        mockMvc.perform(get("/api/social/friends/{userId}", userId)
-                        .param("status", "ONLINE"))
+        mockMvc.perform(get("/api/social/friends/{userId}", userId).param("status", "ONLINE"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].presenceStatus.status").value("ONLINE"));
+    }
+
+    @Test
+    void removeFriend_exitoso_retorna204() throws Exception {
+        UUID userId = UUID.randomUUID();
+        UUID friendId = UUID.randomUUID();
+        doNothing().when(useCase).removeFriend(userId, friendId);
+
+        mockMvc.perform(delete("/api/social/friends/{userId}/{friendId}", userId, friendId))
+                .andExpect(status().isNoContent());
+
+        verify(useCase).removeFriend(userId, friendId);
     }
 }

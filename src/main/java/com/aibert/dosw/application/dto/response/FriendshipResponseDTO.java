@@ -13,6 +13,7 @@ public class FriendshipResponseDTO {
     private UUID friendId;
     private String friendName;
     private String friendEmail;
+    private String friendAvatarUrl;
     private UserPresenceResponseDTO presenceStatus;
     private LocalDateTime since;
 }

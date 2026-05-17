@@ -9,4 +9,5 @@ public interface FriendshipRepositoryPort {
     Friendship save(Friendship friendship);
     List<Friendship> findByUserId(UUID userId);
     boolean existsByUserIds(UUID userId1, UUID userId2);
+    void deleteByUserIds(UUID userId1, UUID userId2);
 }

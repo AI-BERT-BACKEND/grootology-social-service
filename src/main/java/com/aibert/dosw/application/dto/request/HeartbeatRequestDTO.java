@@ -11,4 +11,5 @@ public class HeartbeatRequestDTO {
     private String email;
 
     private String name;
+    private String avatarUrl;
 }
