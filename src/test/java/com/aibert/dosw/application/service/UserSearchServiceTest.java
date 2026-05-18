@@ -88,9 +88,9 @@ class UserSearchServiceTest {
                 .thenReturn(List.of(buildPresence(targetId)));
         when(availabilityRepository.findByUserId(targetId)).thenReturn(Optional.of(
                 AvailabilityConfig.builder().userId(targetId).visibility(VisibilityLevel.PRIVATE).build()));
+        // existsByUserIds called twice: once in isVisibleTo, once in determineRelationship
+        // determineRelationship returns FRIEND immediately — connectionRequestRepository never reached
         when(friendshipRepository.existsByUserIds(requesterId, targetId)).thenReturn(true);
-        when(connectionRequestRepository.existsBySenderIdAndReceiverIdAndStatus(any(), any(), any()))
-                .thenReturn(false);
 
         List<UserSearchResultDTO> result = userSearchService.search("juan", requesterId);
 
