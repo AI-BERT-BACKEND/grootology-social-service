@@ -35,7 +35,7 @@ class FriendshipControllerTest {
     }
 
     @Test
-    void listFriends_sinFiltro_retornaTodasLasAmistades() throws Exception {
+    void listFriends_noFilter_returns200() throws Exception {
         UUID userId = UUID.randomUUID();
         UUID friendId = UUID.randomUUID();
         when(useCase.listFriends(userId, null)).thenReturn(List.of(buildDTO(friendId, OnlineStatus.ONLINE)));
@@ -48,7 +48,7 @@ class FriendshipControllerTest {
     }
 
     @Test
-    void listFriends_conFiltroOnline_retornaSoloOnline() throws Exception {
+    void listFriends_onlineFilter_returns200() throws Exception {
         UUID userId = UUID.randomUUID();
         when(useCase.listFriends(userId, OnlineStatus.ONLINE))
                 .thenReturn(List.of(buildDTO(UUID.randomUUID(), OnlineStatus.ONLINE)));
@@ -59,7 +59,7 @@ class FriendshipControllerTest {
     }
 
     @Test
-    void removeFriend_exitoso_retorna204() throws Exception {
+    void removeFriend_validInput_returns204() throws Exception {
         UUID userId = UUID.randomUUID();
         UUID friendId = UUID.randomUUID();
         doNothing().when(useCase).removeFriend(userId, friendId);

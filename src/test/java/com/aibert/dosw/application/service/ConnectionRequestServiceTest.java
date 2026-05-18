@@ -43,7 +43,7 @@ class ConnectionRequestServiceTest {
     }
 
     @Test
-    void sendRequest_perfilIncompleto_lanzaExcepcion() {
+    void sendRequest_incompleteProfile_throwsException() {
         SendConnectionRequestDTO dto = mock(SendConnectionRequestDTO.class);
         when(academicProfilePort.isProfileComplete(senderId)).thenReturn(false);
 
@@ -53,7 +53,7 @@ class ConnectionRequestServiceTest {
     }
 
     @Test
-    void sendRequest_autoSolicitud_lanzaExcepcion() {
+    void sendRequest_selfRequest_throwsException() {
         SendConnectionRequestDTO dto = mock(SendConnectionRequestDTO.class);
         when(academicProfilePort.isProfileComplete(senderId)).thenReturn(true);
         when(dto.getReceiverId()).thenReturn(senderId);
@@ -64,7 +64,7 @@ class ConnectionRequestServiceTest {
     }
 
     @Test
-    void sendRequest_yaAmigos_lanzaExcepcion() {
+    void sendRequest_alreadyFriends_throwsException() {
         SendConnectionRequestDTO dto = mock(SendConnectionRequestDTO.class);
         when(academicProfilePort.isProfileComplete(senderId)).thenReturn(true);
         when(dto.getReceiverId()).thenReturn(receiverId);
@@ -76,7 +76,7 @@ class ConnectionRequestServiceTest {
     }
 
     @Test
-    void sendRequest_solicitudPendienteEnCualquierDireccion_lanzaExcepcion() {
+    void sendRequest_pendingRequestEitherDirection_throwsException() {
         SendConnectionRequestDTO dto = mock(SendConnectionRequestDTO.class);
         when(academicProfilePort.isProfileComplete(senderId)).thenReturn(true);
         when(dto.getReceiverId()).thenReturn(receiverId);
@@ -90,7 +90,7 @@ class ConnectionRequestServiceTest {
     }
 
     @Test
-    void sendRequest_exitoso_guardaSolicitud() {
+    void sendRequest_validRequest_savesAndReturns() {
         SendConnectionRequestDTO dto = mock(SendConnectionRequestDTO.class);
         when(academicProfilePort.isProfileComplete(senderId)).thenReturn(true);
         when(dto.getReceiverId()).thenReturn(receiverId);
@@ -106,7 +106,7 @@ class ConnectionRequestServiceTest {
     }
 
     @Test
-    void acceptRequest_creaAmistad() {
+    void acceptRequest_pendingRequest_createsFriendship() {
         UUID requestId = UUID.randomUUID();
         when(requestRepository.findById(requestId)).thenReturn(Optional.of(buildRequest(requestId, ConnectionRequestStatus.PENDING)));
         when(requestRepository.save(any())).thenReturn(buildRequest(requestId, ConnectionRequestStatus.ACCEPTED));
@@ -121,7 +121,7 @@ class ConnectionRequestServiceTest {
     }
 
     @Test
-    void acceptRequest_permisoIncorrecto_lanzaExcepcion() {
+    void acceptRequest_wrongReceiver_throwsException() {
         UUID requestId = UUID.randomUUID();
         when(requestRepository.findById(requestId)).thenReturn(Optional.of(buildRequest(requestId, ConnectionRequestStatus.PENDING)));
 
@@ -131,7 +131,7 @@ class ConnectionRequestServiceTest {
     }
 
     @Test
-    void acceptRequest_yaFueProcesada_lanzaExcepcion() {
+    void acceptRequest_alreadyProcessed_throwsException() {
         UUID requestId = UUID.randomUUID();
         when(requestRepository.findById(requestId)).thenReturn(Optional.of(buildRequest(requestId, ConnectionRequestStatus.ACCEPTED)));
 
@@ -141,7 +141,7 @@ class ConnectionRequestServiceTest {
     }
 
     @Test
-    void rejectRequest_exitoso_noCreaAmistad() {
+    void rejectRequest_pendingRequest_doesNotCreateFriendship() {
         UUID requestId = UUID.randomUUID();
         when(requestRepository.findById(requestId)).thenReturn(Optional.of(buildRequest(requestId, ConnectionRequestStatus.PENDING)));
         when(requestRepository.save(any())).thenReturn(buildRequest(requestId, ConnectionRequestStatus.REJECTED));
@@ -152,7 +152,7 @@ class ConnectionRequestServiceTest {
     }
 
     @Test
-    void rejectRequest_permisoIncorrecto_lanzaExcepcion() {
+    void rejectRequest_wrongReceiver_throwsException() {
         UUID requestId = UUID.randomUUID();
         when(requestRepository.findById(requestId)).thenReturn(Optional.of(buildRequest(requestId, ConnectionRequestStatus.PENDING)));
 
@@ -161,7 +161,7 @@ class ConnectionRequestServiceTest {
     }
 
     @Test
-    void rejectRequest_yaFueProcesada_lanzaExcepcion() {
+    void rejectRequest_alreadyProcessed_throwsException() {
         UUID requestId = UUID.randomUUID();
         when(requestRepository.findById(requestId)).thenReturn(Optional.of(buildRequest(requestId, ConnectionRequestStatus.REJECTED)));
 
@@ -170,7 +170,7 @@ class ConnectionRequestServiceTest {
     }
 
     @Test
-    void getPendingRequestsForUser_retornaLista() {
+    void getPendingRequestsForUser_returnsList() {
         when(requestRepository.findByReceiverIdAndStatus(receiverId, ConnectionRequestStatus.PENDING))
                 .thenReturn(List.of(buildRequest(UUID.randomUUID(), ConnectionRequestStatus.PENDING)));
 
@@ -180,7 +180,7 @@ class ConnectionRequestServiceTest {
     }
 
     @Test
-    void getSentRequestsByUser_retornaLista() {
+    void getSentRequestsByUser_returnsList() {
         when(requestRepository.findBySenderId(senderId))
                 .thenReturn(List.of(
                         buildRequest(UUID.randomUUID(), ConnectionRequestStatus.PENDING),

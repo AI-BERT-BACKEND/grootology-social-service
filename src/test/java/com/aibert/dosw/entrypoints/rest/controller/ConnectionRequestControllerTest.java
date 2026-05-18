@@ -35,7 +35,7 @@ class ConnectionRequestControllerTest {
     }
 
     @Test
-    void sendRequest_retorna201() throws Exception {
+    void sendRequest_validInput_returns201() throws Exception {
         UUID senderId = UUID.randomUUID();
         UUID receiverId = UUID.randomUUID();
         when(useCase.sendRequest(eq(senderId), any())).thenReturn(buildDTO(senderId, receiverId));
@@ -48,7 +48,7 @@ class ConnectionRequestControllerTest {
     }
 
     @Test
-    void acceptRequest_retorna200() throws Exception {
+    void acceptRequest_validInput_returns200() throws Exception {
         UUID requestId = UUID.randomUUID();
         UUID receiverId = UUID.randomUUID();
         ConnectionRequestResponseDTO dto = ConnectionRequestResponseDTO.builder()
@@ -64,7 +64,7 @@ class ConnectionRequestControllerTest {
     }
 
     @Test
-    void rejectRequest_retorna200() throws Exception {
+    void rejectRequest_validInput_returns200() throws Exception {
         UUID requestId = UUID.randomUUID();
         UUID receiverId = UUID.randomUUID();
         ConnectionRequestResponseDTO dto = ConnectionRequestResponseDTO.builder()
@@ -80,7 +80,7 @@ class ConnectionRequestControllerTest {
     }
 
     @Test
-    void getPendingRequests_retorna200() throws Exception {
+    void getPendingRequests_returns200() throws Exception {
         UUID receiverId = UUID.randomUUID();
         when(useCase.getPendingRequestsForUser(receiverId))
                 .thenReturn(List.of(buildDTO(UUID.randomUUID(), receiverId)));
@@ -91,7 +91,7 @@ class ConnectionRequestControllerTest {
     }
 
     @Test
-    void getSentRequests_retorna200() throws Exception {
+    void getSentRequests_returns200() throws Exception {
         UUID senderId = UUID.randomUUID();
         when(useCase.getSentRequestsByUser(senderId))
                 .thenReturn(List.of(buildDTO(senderId, UUID.randomUUID())));

@@ -44,20 +44,18 @@ class SocialPanelServiceTest {
     private final UUID userId = UUID.randomUUID();
 
     @Test
-    void getPanel_general_retornaResumenConAcciones() {
+    void getPanel_noAction_returnsFullPanelWithActions() {
         when(userPresenceUseCase.getStatus(userId)).thenReturn(UserPresenceResponseDTO.builder()
                 .userId(userId).status(OnlineStatus.ONLINE).lastSeen(LocalDateTime.now()).build());
         when(invitationUseCase.getOrCreateReferralLink(userId)).thenReturn(InviteResponseDTO.builder()
-                .referralLink("http://localhost/ref")
-                .message("Comparte este enlace con usuarios externos a AI.BERT")
-                .build());
+                .referralLink("http://localhost/ref").message("Comparte este enlace").build());
         when(connectionRequestUseCase.getPendingRequestsForUser(userId)).thenReturn(List.of());
         when(availabilityUseCase.getConfig(userId)).thenReturn(AvailabilityConfig.builder()
                 .userId(userId).visibility(VisibilityLevel.PUBLIC).build());
         when(studySessionUseCase.getSessionsForUser(userId)).thenReturn(List.of(StudySessionResponseDTO.builder()
-                .id(UUID.randomUUID()).topic("Calculo")
-                .scheduledAt(LocalDateTime.now().plusDays(1))
-                .durationHours(2.0).participantIds(List.of(userId)).build()));
+                .id(UUID.randomUUID()).topic("Cálculo")
+                .scheduledAt(LocalDateTime.now().plusDays(1)).durationHours(2.0)
+                .participantIds(List.of(userId)).build()));
 
         SocialPanelResponseDTO response = socialPanelService.getPanel(userId, null);
 
@@ -73,7 +71,7 @@ class SocialPanelServiceTest {
     }
 
     @Test
-    void getPanel_invitar_retornaSolicitudesPendientes() {
+    void getPanel_inviteAction_returnsPendingRequests() {
         UUID requestId = UUID.randomUUID();
         when(userPresenceUseCase.getStatus(userId)).thenReturn(UserPresenceResponseDTO.builder()
                 .userId(userId).status(OnlineStatus.OFFLINE).build());
@@ -94,7 +92,7 @@ class SocialPanelServiceTest {
     }
 
     @Test
-    void getPanel_buscar_retornaDisponibilidad() {
+    void getPanel_searchAction_returnsAvailability() {
         when(userPresenceUseCase.getStatus(userId)).thenReturn(UserPresenceResponseDTO.builder()
                 .userId(userId).status(OnlineStatus.OFFLINE).build());
         when(availabilityUseCase.getConfig(userId)).thenReturn(AvailabilityConfig.builder()
@@ -111,13 +109,13 @@ class SocialPanelServiceTest {
     }
 
     @Test
-    void getPanel_listar_retornaSesiones() {
+    void getPanel_listAction_returnsSessions() {
         when(userPresenceUseCase.getStatus(userId)).thenReturn(UserPresenceResponseDTO.builder()
                 .userId(userId).status(OnlineStatus.OFFLINE).build());
         when(studySessionUseCase.getSessionsForUser(userId)).thenReturn(List.of(
                 StudySessionResponseDTO.builder().id(UUID.randomUUID()).topic("Álgebra")
-                        .scheduledAt(LocalDateTime.now().plusDays(2))
-                        .durationHours(1.5).participantIds(List.of(userId)).build()));
+                        .scheduledAt(LocalDateTime.now().plusDays(2)).durationHours(1.5)
+                        .participantIds(List.of(userId)).build()));
 
         SocialPanelResponseDTO response = socialPanelService.getPanel(userId, SocialAction.LISTAR);
 
@@ -130,7 +128,7 @@ class SocialPanelServiceTest {
     }
 
     @Test
-    void getPanel_chat_retornaConversacionesReales() {
+    void getPanel_chatAction_returnsConversations() {
         UUID friendId = UUID.randomUUID();
         when(userPresenceUseCase.getStatus(userId)).thenReturn(UserPresenceResponseDTO.builder()
                 .userId(userId).status(OnlineStatus.ONLINE).build());
@@ -140,8 +138,7 @@ class SocialPanelServiceTest {
                         .lastMessageContent("Hola!")
                         .lastMessageSenderId(friendId)
                         .lastMessageAt(LocalDateTime.now().minusMinutes(5))
-                        .unreadCount(2)
-                        .build()));
+                        .unreadCount(2).build()));
 
         SocialPanelResponseDTO response = socialPanelService.getPanel(userId, SocialAction.CHAT);
 

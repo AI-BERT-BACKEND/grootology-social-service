@@ -26,11 +26,10 @@ class AvailabilityServiceTest {
     private final UUID userId = UUID.randomUUID();
 
     @Test
-    void saveConfig_exitoso_guardaConfiguracion() {
+    void saveConfig_validInput_savesAndReturns() {
         AvailabilityConfigRequestDTO dto = mock(AvailabilityConfigRequestDTO.class);
         when(dto.getVisibility()).thenReturn(VisibilityLevel.PUBLIC);
         when(dto.getAuthorizedFriends()).thenReturn(null);
-
         when(repository.save(any())).thenAnswer(i -> i.getArgument(0));
 
         AvailabilityConfig result = availabilityService.saveConfig(userId, dto);
@@ -40,7 +39,7 @@ class AvailabilityServiceTest {
     }
 
     @Test
-    void getConfig_noExiste_retornaPrivadoPorDefecto() {
+    void getConfig_noConfigFound_returnsPrivateDefault() {
         when(repository.findByUserId(userId)).thenReturn(Optional.empty());
 
         AvailabilityConfig result = availabilityService.getConfig(userId);
@@ -49,7 +48,7 @@ class AvailabilityServiceTest {
     }
 
     @Test
-    void getConfig_existe_retornaConfiguracion() {
+    void getConfig_configExists_returnsConfig() {
         AvailabilityConfig config = AvailabilityConfig.builder()
                 .userId(userId)
                 .visibility(VisibilityLevel.SPECIFIC)

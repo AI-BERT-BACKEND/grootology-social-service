@@ -33,7 +33,7 @@ class ChatControllerTest {
     }
 
     @Test
-    void sendMessage_retorna201() throws Exception {
+    void sendMessage_validInput_returns201() throws Exception {
         UUID senderId = UUID.randomUUID();
         UUID receiverId = UUID.randomUUID();
         when(useCase.sendMessage(eq(senderId), any())).thenReturn(buildMsg(senderId, receiverId));
@@ -47,7 +47,7 @@ class ChatControllerTest {
     }
 
     @Test
-    void getConversation_retorna200() throws Exception {
+    void getConversation_validRequest_returns200() throws Exception {
         UUID userId = UUID.randomUUID();
         UUID friendId = UUID.randomUUID();
         when(useCase.getConversation(userId, friendId, 0, 20))
@@ -59,7 +59,7 @@ class ChatControllerTest {
     }
 
     @Test
-    void getConversations_retorna200() throws Exception {
+    void getConversations_validUser_returns200() throws Exception {
         UUID userId = UUID.randomUUID();
         UUID friendId = UUID.randomUUID();
         when(useCase.getConversations(userId)).thenReturn(List.of(
@@ -75,7 +75,7 @@ class ChatControllerTest {
     }
 
     @Test
-    void markAsRead_retorna200() throws Exception {
+    void markAsRead_validInput_returns200() throws Exception {
         UUID messageId = UUID.randomUUID();
         UUID readerId = UUID.randomUUID();
         ChatMessageResponseDTO dto = ChatMessageResponseDTO.builder()
@@ -92,7 +92,7 @@ class ChatControllerTest {
     }
 
     @Test
-    void deleteMessage_retorna204() throws Exception {
+    void deleteMessage_validInput_returns204() throws Exception {
         UUID messageId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
         doNothing().when(useCase).deleteMessage(messageId, userId);
