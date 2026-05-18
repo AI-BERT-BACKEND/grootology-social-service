@@ -39,16 +39,16 @@ class ChatServiceTest {
     private ChatMessage buildMessage(UUID id, UUID from, UUID to, LocalDateTime readAt) {
         return ChatMessage.builder()
                 .id(id).senderId(from).receiverId(to)
-                .content("Hola").sentAt(LocalDateTime.now().minusMinutes(5))
+                .content("Hello").sentAt(LocalDateTime.now().minusMinutes(5))
                 .readAt(readAt)
                 .deletedBySender(false).deletedByReceiver(false).build();
     }
 
     @Test
-    void sendMessage_exitoso_guardaMensaje() {
+    void sendMessage_validFriends_savesAndReturns() {
         SendMessageRequestDTO dto = mock(SendMessageRequestDTO.class);
         when(dto.getReceiverId()).thenReturn(receiverId);
-        when(dto.getContent()).thenReturn("Hola!");
+        when(dto.getContent()).thenReturn("Hello!");
         when(friendshipRepository.existsByUserIds(senderId, receiverId)).thenReturn(true);
         when(messageRepository.save(any())).thenReturn(buildMessage(UUID.randomUUID(), senderId, receiverId, null));
 
@@ -60,7 +60,7 @@ class ChatServiceTest {
     }
 
     @Test
-    void sendMessage_noAmigos_lanzaExcepcion() {
+    void sendMessage_notFriends_throwsException() {
         SendMessageRequestDTO dto = mock(SendMessageRequestDTO.class);
         when(dto.getReceiverId()).thenReturn(receiverId);
         when(friendshipRepository.existsByUserIds(senderId, receiverId)).thenReturn(false);
@@ -70,7 +70,7 @@ class ChatServiceTest {
     }
 
     @Test
-    void sendMessage_autoMensaje_lanzaExcepcion() {
+    void sendMessage_selfMessage_throwsException() {
         SendMessageRequestDTO dto = mock(SendMessageRequestDTO.class);
         when(dto.getReceiverId()).thenReturn(senderId);
 
@@ -79,7 +79,7 @@ class ChatServiceTest {
     }
 
     @Test
-    void getConversation_retornaMensajes() {
+    void getConversation_returnsMessages() {
         when(messageRepository.findConversation(senderId, receiverId, 0, 20))
                 .thenReturn(List.of(buildMessage(UUID.randomUUID(), senderId, receiverId, null)));
 
@@ -89,7 +89,7 @@ class ChatServiceTest {
     }
 
     @Test
-    void getConversations_retornaResumenPorContacto() {
+    void getConversations_returnsContactSummary() {
         UUID msgId = UUID.randomUUID();
         ChatMessage msg1 = buildMessage(msgId, receiverId, senderId, null);
         ChatMessage msg2 = buildMessage(UUID.randomUUID(), senderId, receiverId, LocalDateTime.now());
@@ -108,7 +108,7 @@ class ChatServiceTest {
     }
 
     @Test
-    void markAsRead_exitoso_actualizaTimestamp() {
+    void markAsRead_unreadMessage_updatesTimestamp() {
         UUID msgId = UUID.randomUUID();
         ChatMessage msg = buildMessage(msgId, senderId, receiverId, null);
 
@@ -122,7 +122,7 @@ class ChatServiceTest {
     }
 
     @Test
-    void markAsRead_permisoIncorrecto_lanzaExcepcion() {
+    void markAsRead_wrongReceiver_throwsException() {
         UUID msgId = UUID.randomUUID();
         when(messageRepository.findById(msgId)).thenReturn(
                 Optional.of(buildMessage(msgId, senderId, receiverId, null)));
@@ -132,7 +132,7 @@ class ChatServiceTest {
     }
 
     @Test
-    void deleteMessage_porEmisor_marcaDeletedBySender() {
+    void deleteMessage_bySender_marksDeletedBySender() {
         UUID msgId = UUID.randomUUID();
         ChatMessage msg = buildMessage(msgId, senderId, receiverId, null);
 
@@ -144,7 +144,7 @@ class ChatServiceTest {
     }
 
     @Test
-    void deleteMessage_porReceptor_marcaDeletedByReceiver() {
+    void deleteMessage_byReceiver_marksDeletedByReceiver() {
         UUID msgId = UUID.randomUUID();
         ChatMessage msg = buildMessage(msgId, senderId, receiverId, null);
 
@@ -156,7 +156,7 @@ class ChatServiceTest {
     }
 
     @Test
-    void deleteMessage_sinPermiso_lanzaExcepcion() {
+    void deleteMessage_unauthorized_throwsException() {
         UUID msgId = UUID.randomUUID();
         when(messageRepository.findById(msgId)).thenReturn(
                 Optional.of(buildMessage(msgId, senderId, receiverId, null)));
@@ -166,7 +166,7 @@ class ChatServiceTest {
     }
 
     @Test
-    void markAsRead_yaLeido_retornaSinGuardar() {
+    void markAsRead_alreadyRead_returnsWithoutSaving() {
         UUID msgId = UUID.randomUUID();
         LocalDateTime readAt = LocalDateTime.now().minusMinutes(1);
         ChatMessage msg = buildMessage(msgId, senderId, receiverId, readAt);
@@ -180,7 +180,7 @@ class ChatServiceTest {
     }
 
     @Test
-    void getConversations_contactoSinPresencia_retornaOfflineYNulos() {
+    void getConversations_noPresenceData_returnsOfflineDefaults() {
         ChatMessage msg = buildMessage(UUID.randomUUID(), receiverId, senderId, null);
 
         when(messageRepository.findAllMessagesForUser(senderId)).thenReturn(List.of(msg));
@@ -197,7 +197,7 @@ class ChatServiceTest {
     }
 
     @Test
-    void getConversaciones_sinMensajes_retornaVacio() {
+    void getConversations_noMessages_returnsEmpty() {
         when(messageRepository.findAllMessagesForUser(senderId)).thenReturn(List.of());
 
         List<ConversationSummaryResponseDTO> result = chatService.getConversations(senderId);
@@ -207,7 +207,7 @@ class ChatServiceTest {
     }
 
     @Test
-    void markAsRead_mensajeNoEncontrado_lanzaExcepcion() {
+    void markAsRead_messageNotFound_throwsException() {
         UUID msgId = UUID.randomUUID();
         when(messageRepository.findById(msgId)).thenReturn(Optional.empty());
 
@@ -216,7 +216,7 @@ class ChatServiceTest {
     }
 
     @Test
-    void deleteMessage_mensajeNoEncontrado_lanzaExcepcion() {
+    void deleteMessage_messageNotFound_throwsException() {
         UUID msgId = UUID.randomUUID();
         when(messageRepository.findById(msgId)).thenReturn(Optional.empty());
 
@@ -225,11 +225,11 @@ class ChatServiceTest {
     }
 
     @Test
-    void deleteMessage_yaEliminadoPorEmisor_receptorPuedeBorrar() {
+    void deleteMessage_alreadyDeletedBySender_receiverCanStillDelete() {
         UUID msgId = UUID.randomUUID();
         ChatMessage msg = ChatMessage.builder()
                 .id(msgId).senderId(senderId).receiverId(receiverId)
-                .content("Hola").sentAt(LocalDateTime.now().minusMinutes(5))
+                .content("Hello").sentAt(LocalDateTime.now().minusMinutes(5))
                 .readAt(null).deletedBySender(true).deletedByReceiver(false).build();
 
         when(messageRepository.findById(msgId)).thenReturn(Optional.of(msg));
@@ -241,11 +241,11 @@ class ChatServiceTest {
     }
 
     @Test
-    void deleteMessage_yaEliminadoPorReceptor_emisorPuedeBorrar() {
+    void deleteMessage_alreadyDeletedByReceiver_senderCanStillDelete() {
         UUID msgId = UUID.randomUUID();
         ChatMessage msg = ChatMessage.builder()
                 .id(msgId).senderId(senderId).receiverId(receiverId)
-                .content("Hola").sentAt(LocalDateTime.now().minusMinutes(5))
+                .content("Hello").sentAt(LocalDateTime.now().minusMinutes(5))
                 .readAt(null).deletedBySender(false).deletedByReceiver(true).build();
 
         when(messageRepository.findById(msgId)).thenReturn(Optional.of(msg));

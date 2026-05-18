@@ -30,7 +30,7 @@ class UserPresenceControllerTest {
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Test
-    void heartbeat_retorna200ConEstadoYAvatar() throws Exception {
+    void heartbeat_validInput_returns200WithStatus() throws Exception {
         UUID userId = UUID.randomUUID();
         UserPresenceResponseDTO dto = UserPresenceResponseDTO.builder()
                 .userId(userId).status(OnlineStatus.ONLINE)
@@ -54,7 +54,7 @@ class UserPresenceControllerTest {
     }
 
     @Test
-    void getStatus_retorna200ConEstado() throws Exception {
+    void getStatus_existingUser_returns200() throws Exception {
         UUID userId = UUID.randomUUID();
         when(useCase.getStatus(userId)).thenReturn(UserPresenceResponseDTO.builder()
                 .userId(userId).status(OnlineStatus.OFFLINE).build());

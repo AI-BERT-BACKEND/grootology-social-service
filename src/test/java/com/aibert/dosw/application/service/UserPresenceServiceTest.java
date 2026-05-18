@@ -36,7 +36,7 @@ class UserPresenceServiceTest {
     }
 
     @Test
-    void heartbeat_usuarioNuevo_creaPresencia() {
+    void heartbeat_newUser_createsPresence() {
         UUID presenceId = UUID.randomUUID();
         when(presenceRepository.findByUserId(userId)).thenReturn(Optional.empty());
         when(presenceRepository.save(any())).thenReturn(buildPresence(presenceId, LocalDateTime.now()));
@@ -48,7 +48,7 @@ class UserPresenceServiceTest {
     }
 
     @Test
-    void heartbeat_usuarioExistente_actualizaLastSeen() {
+    void heartbeat_existingUser_updatesLastSeen() {
         UUID presenceId = UUID.randomUUID();
         LocalDateTime oldLastSeen = LocalDateTime.now().minusHours(2);
         UserPresence existing = buildPresence(presenceId, oldLastSeen);
@@ -66,7 +66,7 @@ class UserPresenceServiceTest {
     }
 
     @Test
-    void heartbeat_camposNulos_conservaDatosExistentes() {
+    void heartbeat_nullFields_preservesExistingData() {
         UserPresence existing = buildPresence(UUID.randomUUID(), LocalDateTime.now().minusMinutes(10));
         when(presenceRepository.findByUserId(userId)).thenReturn(Optional.of(existing));
         when(presenceRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
@@ -81,7 +81,7 @@ class UserPresenceServiceTest {
     }
 
     @Test
-    void getStatus_usuarioOnline_retornaOnline() {
+    void getStatus_recentHeartbeat_returnsOnline() {
         UserPresence presence = buildPresence(UUID.randomUUID(), LocalDateTime.now().minusMinutes(2));
         when(presenceRepository.findByUserId(userId)).thenReturn(Optional.of(presence));
 
@@ -93,7 +93,7 @@ class UserPresenceServiceTest {
     }
 
     @Test
-    void getStatus_usuarioOffline_retornaOffline() {
+    void getStatus_staleHeartbeat_returnsOffline() {
         UserPresence presence = buildPresence(UUID.randomUUID(), LocalDateTime.now().minusMinutes(10));
         when(presenceRepository.findByUserId(userId)).thenReturn(Optional.of(presence));
 
@@ -101,7 +101,7 @@ class UserPresenceServiceTest {
     }
 
     @Test
-    void getStatus_usuarioNoExistente_retornaOffline() {
+    void getStatus_userNotFound_returnsOffline() {
         when(presenceRepository.findByUserId(userId)).thenReturn(Optional.empty());
 
         UserPresenceResponseDTO result = userPresenceService.getStatus(userId);

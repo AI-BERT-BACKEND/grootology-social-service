@@ -24,7 +24,7 @@ class UserSearchControllerTest {
             new UserSearchController(useCase)).build();
 
     @Test
-    void search_conQuery_retornaResultados() throws Exception {
+    void search_withQuery_returnsResults() throws Exception {
         UUID requesterId = UUID.randomUUID();
         UUID targetId = UUID.randomUUID();
         UserSearchResultDTO dto = UserSearchResultDTO.builder()
@@ -45,7 +45,7 @@ class UserSearchControllerTest {
     }
 
     @Test
-    void search_sinResultados_retornaListaVacia() throws Exception {
+    void search_noResults_returnsEmpty() throws Exception {
         UUID requesterId = UUID.randomUUID();
         when(useCase.search("xyz", requesterId)).thenReturn(List.of());
 

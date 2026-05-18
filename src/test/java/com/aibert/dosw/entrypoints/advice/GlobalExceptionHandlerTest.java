@@ -17,21 +17,21 @@ class GlobalExceptionHandlerTest {
     private final GlobalExceptionHandler handler = new GlobalExceptionHandler();
 
     @Test
-    void handleNotFound_retorna404() {
+    void handleNotFound_returns404() {
         ResponseEntity<Map<String, String>> r = handler.handleNotFound(new SessionNotFoundException());
         assertEquals(HttpStatus.NOT_FOUND, r.getStatusCode());
         assertTrue(r.getBody().containsKey("error"));
     }
 
     @Test
-    void handleInvalidInvitation_retorna400() {
+    void handleInvalidInvitation_returns400() {
         ResponseEntity<Map<String, String>> r = handler.handleInvalidInvitation(
                 new InvalidInvitationException("error"));
         assertEquals(HttpStatus.BAD_REQUEST, r.getStatusCode());
     }
 
     @Test
-    void handleConnectionRequest_retorna400ConMensaje() {
+    void handleConnectionRequest_returns400WithMessage() {
         ResponseEntity<Map<String, String>> r = handler.handleConnectionRequest(
                 new ConnectionRequestException("Ya son amigos"));
         assertEquals(HttpStatus.BAD_REQUEST, r.getStatusCode());
@@ -39,7 +39,7 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void handleIncompleteProfile_retorna403() {
+    void handleIncompleteProfile_returns403() {
         ResponseEntity<Map<String, String>> r = handler.handleIncompleteProfile(
                 new IncompleteProfileException("Perfil incompleto"));
         assertEquals(HttpStatus.FORBIDDEN, r.getStatusCode());

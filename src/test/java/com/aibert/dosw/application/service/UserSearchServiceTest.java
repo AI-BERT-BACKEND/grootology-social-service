@@ -39,24 +39,24 @@ class UserSearchServiceTest {
     private UserPresence buildPresence(UUID uid) {
         return UserPresence.builder()
                 .id(UUID.randomUUID()).userId(uid)
-                .name("Nombre").email("correo@test.com")
+                .name("Name").email("email@test.com")
                 .lastSeen(LocalDateTime.now().minusMinutes(2)).build();
     }
 
     @Test
-    void search_queryNula_retornaVacio() {
+    void search_nullQuery_returnsEmpty() {
         assertTrue(userSearchService.search(null, requesterId).isEmpty());
         verifyNoInteractions(userPresenceRepository);
     }
 
     @Test
-    void search_queryBlanca_retornaVacio() {
+    void search_blankQuery_returnsEmpty() {
         assertTrue(userSearchService.search("   ", requesterId).isEmpty());
         verifyNoInteractions(userPresenceRepository);
     }
 
     @Test
-    void search_usuarioPublico_aparecEnResultados() {
+    void search_publicUser_appearsInResults() {
         when(userPresenceRepository.searchByNameOrEmail("juan", requesterId))
                 .thenReturn(List.of(buildPresence(targetId)));
         when(availabilityRepository.findByUserId(targetId)).thenReturn(Optional.of(
@@ -72,27 +72,25 @@ class UserSearchServiceTest {
     }
 
     @Test
-    void search_usuarioPrivado_noApareceEnResultados() {
+    void search_privateUser_notInResults() {
         when(userPresenceRepository.searchByNameOrEmail("juan", requesterId))
                 .thenReturn(List.of(buildPresence(targetId)));
         when(availabilityRepository.findByUserId(targetId)).thenReturn(Optional.of(
                 AvailabilityConfig.builder().userId(targetId).visibility(VisibilityLevel.PRIVATE).build()));
         when(friendshipRepository.existsByUserIds(requesterId, targetId)).thenReturn(false);
 
-        List<UserSearchResultDTO> result = userSearchService.search("juan", requesterId);
-
-        assertTrue(result.isEmpty());
+        assertTrue(userSearchService.search("juan", requesterId).isEmpty());
     }
 
     @Test
-    void search_usuarioPrivadoPeroAmigo_apareceEnResultados() {
+    void search_privateUserButFriend_appearsInResults() {
         when(userPresenceRepository.searchByNameOrEmail("juan", requesterId))
                 .thenReturn(List.of(buildPresence(targetId)));
         when(availabilityRepository.findByUserId(targetId)).thenReturn(Optional.of(
                 AvailabilityConfig.builder().userId(targetId).visibility(VisibilityLevel.PRIVATE).build()));
-        // friendshipRepository.existsByUserIds se llama dos veces: en isVisibleTo y en determineRelationship
         when(friendshipRepository.existsByUserIds(requesterId, targetId)).thenReturn(true);
-        // connectionRequestRepository no se llama porque determineRelationship retorna FRIEND inmediatamente
+        when(connectionRequestRepository.existsBySenderIdAndReceiverIdAndStatus(any(), any(), any()))
+                .thenReturn(false);
 
         List<UserSearchResultDTO> result = userSearchService.search("juan", requesterId);
 
@@ -101,7 +99,7 @@ class UserSearchServiceTest {
     }
 
     @Test
-    void search_usuarioSpecific_apareceParaAutorizado() {
+    void search_specificUser_appearsForAuthorized() {
         when(userPresenceRepository.searchByNameOrEmail("juan", requesterId))
                 .thenReturn(List.of(buildPresence(targetId)));
         when(availabilityRepository.findByUserId(targetId)).thenReturn(Optional.of(
@@ -112,13 +110,11 @@ class UserSearchServiceTest {
         when(connectionRequestRepository.existsBySenderIdAndReceiverIdAndStatus(any(), any(), any()))
                 .thenReturn(false);
 
-        List<UserSearchResultDTO> result = userSearchService.search("juan", requesterId);
-
-        assertEquals(1, result.size());
+        assertEquals(1, userSearchService.search("juan", requesterId).size());
     }
 
     @Test
-    void search_usuarioSpecific_noApareceParaNoAutorizado() {
+    void search_specificUser_hiddenForUnauthorized() {
         when(userPresenceRepository.searchByNameOrEmail("juan", requesterId))
                 .thenReturn(List.of(buildPresence(targetId)));
         when(availabilityRepository.findByUserId(targetId)).thenReturn(Optional.of(
@@ -126,13 +122,11 @@ class UserSearchServiceTest {
                         .visibility(VisibilityLevel.SPECIFIC)
                         .authorizedFriends(List.of(UUID.randomUUID())).build()));
 
-        List<UserSearchResultDTO> result = userSearchService.search("juan", requesterId);
-
-        assertTrue(result.isEmpty());
+        assertTrue(userSearchService.search("juan", requesterId).isEmpty());
     }
 
     @Test
-    void search_sinConfiguracion_trataComoPublico() {
+    void search_noVisibilityConfig_treatedAsPublic() {
         when(userPresenceRepository.searchByNameOrEmail("juan", requesterId))
                 .thenReturn(List.of(buildPresence(targetId)));
         when(availabilityRepository.findByUserId(targetId)).thenReturn(Optional.empty());
@@ -140,13 +134,11 @@ class UserSearchServiceTest {
         when(connectionRequestRepository.existsBySenderIdAndReceiverIdAndStatus(any(), any(), any()))
                 .thenReturn(false);
 
-        List<UserSearchResultDTO> result = userSearchService.search("juan", requesterId);
-
-        assertEquals(1, result.size());
+        assertEquals(1, userSearchService.search("juan", requesterId).size());
     }
 
     @Test
-    void search_solicitudEnviada_retornaPendingSent() {
+    void search_sentRequest_returnsPendingSent() {
         when(userPresenceRepository.searchByNameOrEmail("juan", requesterId))
                 .thenReturn(List.of(buildPresence(targetId)));
         when(availabilityRepository.findByUserId(targetId)).thenReturn(Optional.of(
@@ -155,13 +147,11 @@ class UserSearchServiceTest {
         when(connectionRequestRepository.existsBySenderIdAndReceiverIdAndStatus(
                 requesterId, targetId, ConnectionRequestStatus.PENDING)).thenReturn(true);
 
-        List<UserSearchResultDTO> result = userSearchService.search("juan", requesterId);
-
-        assertEquals(RelationshipStatus.PENDING_SENT, result.get(0).getRelationshipStatus());
+        assertEquals(RelationshipStatus.PENDING_SENT, userSearchService.search("juan", requesterId).get(0).getRelationshipStatus());
     }
 
     @Test
-    void search_solicitudRecibida_retornaPendingReceived() {
+    void search_receivedRequest_returnsPendingReceived() {
         when(userPresenceRepository.searchByNameOrEmail("juan", requesterId))
                 .thenReturn(List.of(buildPresence(targetId)));
         when(availabilityRepository.findByUserId(targetId)).thenReturn(Optional.of(
@@ -172,13 +162,11 @@ class UserSearchServiceTest {
         when(connectionRequestRepository.existsBySenderIdAndReceiverIdAndStatus(
                 targetId, requesterId, ConnectionRequestStatus.PENDING)).thenReturn(true);
 
-        List<UserSearchResultDTO> result = userSearchService.search("juan", requesterId);
-
-        assertEquals(RelationshipStatus.PENDING_RECEIVED, result.get(0).getRelationshipStatus());
+        assertEquals(RelationshipStatus.PENDING_RECEIVED, userSearchService.search("juan", requesterId).get(0).getRelationshipStatus());
     }
 
     @Test
-    void search_usuarioSpecific_listaAutorizadosNula_noAparece() {
+    void search_specificUserNullAuthorizedList_notInResults() {
         when(userPresenceRepository.searchByNameOrEmail("juan", requesterId))
                 .thenReturn(List.of(buildPresence(targetId)));
         when(availabilityRepository.findByUserId(targetId)).thenReturn(Optional.of(
@@ -186,8 +174,6 @@ class UserSearchServiceTest {
                         .visibility(VisibilityLevel.SPECIFIC)
                         .authorizedFriends(null).build()));
 
-        List<UserSearchResultDTO> result = userSearchService.search("juan", requesterId);
-
-        assertTrue(result.isEmpty());
+        assertTrue(userSearchService.search("juan", requesterId).isEmpty());
     }
 }

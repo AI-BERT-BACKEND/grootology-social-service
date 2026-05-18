@@ -10,8 +10,7 @@ public class StubAcademicProfileAdapter implements AcademicProfilePort {
 
     @Override
     public boolean isProfileComplete(UUID userId) {
-        // Pendiente integración con servicio AIB-6 de perfil académico.
-        // En producción se reemplaza con llamada HTTP al servicio de perfiles.
+        // TODO: replace with HTTP call to AIB-6 profile service in production.
         return true;
     }
 }

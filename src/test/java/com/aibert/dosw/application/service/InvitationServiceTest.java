@@ -42,7 +42,7 @@ class InvitationServiceTest {
     }
 
     @Test
-    void getOrCreateReferralLink_creaEnlaceNuevo() {
+    void getOrCreateReferralLink_noExistingLink_createsNew() {
         when(invitationRepository.findByInviterId(userId)).thenReturn(Optional.empty());
         when(invitationRepository.save(any())).thenReturn(Invitation.builder()
                 .inviterId(userId).referralCode("test-code").used(false).build());
@@ -54,7 +54,7 @@ class InvitationServiceTest {
     }
 
     @Test
-    void getOrCreateReferralLink_retornaEnlaceExistente() {
+    void getOrCreateReferralLink_existingLink_returnsExisting() {
         when(invitationRepository.findByInviterId(userId)).thenReturn(Optional.of(
                 Invitation.builder().inviterId(userId).referralCode("existing-code").used(false).build()));
 
@@ -65,7 +65,7 @@ class InvitationServiceTest {
     }
 
     @Test
-    void sendInvitations_exitoso_enviaCorreos() {
+    void sendInvitations_validExternalEmail_sendsEmail() {
         com.aibert.dosw.application.dto.request.InviteFriendsRequestDTO request =
                 mock(com.aibert.dosw.application.dto.request.InviteFriendsRequestDTO.class);
         when(request.getEmails()).thenReturn(List.of("externo@ejemplo.com"));
@@ -83,7 +83,7 @@ class InvitationServiceTest {
     }
 
     @Test
-    void sendInvitations_autoInvitacion_lanzaExcepcion() {
+    void sendInvitations_selfInvitation_throwsException() {
         com.aibert.dosw.application.dto.request.InviteFriendsRequestDTO request =
                 mock(com.aibert.dosw.application.dto.request.InviteFriendsRequestDTO.class);
         when(request.getEmails()).thenReturn(List.of("inviter@test.com"));
@@ -100,7 +100,7 @@ class InvitationServiceTest {
     }
 
     @Test
-    void sendInvitations_correoRegistrado_lanzaExcepcion() {
+    void sendInvitations_registeredEmail_throwsException() {
         com.aibert.dosw.application.dto.request.InviteFriendsRequestDTO request =
                 mock(com.aibert.dosw.application.dto.request.InviteFriendsRequestDTO.class);
         when(request.getEmails()).thenReturn(List.of("registrado@aibert.com"));
@@ -117,7 +117,7 @@ class InvitationServiceTest {
     }
 
     @Test
-    void sendInvitations_listaVacia_noEnviaCorreos() {
+    void sendInvitations_emptyList_sendsNothing() {
         com.aibert.dosw.application.dto.request.InviteFriendsRequestDTO request =
                 mock(com.aibert.dosw.application.dto.request.InviteFriendsRequestDTO.class);
         when(request.getEmails()).thenReturn(List.of());
@@ -127,7 +127,7 @@ class InvitationServiceTest {
     }
 
     @Test
-    void sendInvitations_listaNull_noEnviaCorreos() {
+    void sendInvitations_nullList_sendsNothing() {
         com.aibert.dosw.application.dto.request.InviteFriendsRequestDTO request =
                 mock(com.aibert.dosw.application.dto.request.InviteFriendsRequestDTO.class);
         when(request.getEmails()).thenReturn(null);
@@ -137,7 +137,7 @@ class InvitationServiceTest {
     }
 
     @Test
-    void redeemReferralCode_exitoso_otorgaPuntos() {
+    void redeemReferralCode_validCode_awardsPoints() {
         UUID inviterId = UUID.randomUUID();
         UUID newUserId = UUID.randomUUID();
         Invitation invitation = Invitation.builder()
@@ -158,7 +158,7 @@ class InvitationServiceTest {
     }
 
     @Test
-    void redeemReferralCode_codigoInvalido_lanzaExcepcion() {
+    void redeemReferralCode_invalidCode_throwsException() {
         when(invitationRepository.findByReferralCode("bad-code")).thenReturn(Optional.empty());
 
         assertThrows(InvalidInvitationException.class,
@@ -167,7 +167,7 @@ class InvitationServiceTest {
     }
 
     @Test
-    void redeemReferralCode_codigoYaUsado_lanzaExcepcion() {
+    void redeemReferralCode_alreadyUsedCode_throwsException() {
         Invitation used = Invitation.builder()
                 .id(UUID.randomUUID()).inviterId(UUID.randomUUID())
                 .referralCode("used-code").used(true).build();
