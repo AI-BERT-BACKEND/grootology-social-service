@@ -35,6 +35,8 @@ services:
       MAIL_PORT: ${MAIL_PORT}
       MAIL_USERNAME: ${MAIL_USERNAME}
       MAIL_PASSWORD: ${MAIL_PASSWORD}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://frontend-umber-seven-28.vercel.app,http://localhost:3000,http://localhost:5173}
+      PROFILE_SERVICE_URL: ${PROFILE_SERVICE_URL:-https://aibert-profile-service-qa.yellowwave-cb2d91fc.centralus.azurecontainerapps.io}
     depends_on:
       postgres:
         condition: service_healthy

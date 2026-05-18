@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
-@Component
+// Stub kept as reference — replaced by FeignAcademicProfileAdapter in production.
 public class StubAcademicProfileAdapter implements AcademicProfilePort {
 
     @Override
