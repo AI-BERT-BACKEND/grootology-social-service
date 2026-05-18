@@ -5,6 +5,7 @@ import com.aibert.dosw.application.dto.response.ChatMessageResponseDTO;
 import com.aibert.dosw.application.dto.response.ConversationSummaryResponseDTO;
 import com.aibert.dosw.domain.exceptions.ConnectionRequestException;
 import com.aibert.dosw.domain.model.user.ChatMessage;
+import com.aibert.dosw.domain.model.user.OnlineStatus;
 import com.aibert.dosw.domain.model.user.UserPresence;
 import com.aibert.dosw.domain.ports.out.ChatMessageRepositoryPort;
 import com.aibert.dosw.domain.ports.out.FriendshipRepositoryPort;
