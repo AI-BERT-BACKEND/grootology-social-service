@@ -163,4 +163,45 @@ class ChatServiceTest {
         assertThrows(ConnectionRequestException.class,
                 () -> chatService.deleteMessage(msgId, UUID.randomUUID()));
     }
+
+    @Test
+    void markAsRead_yaLeido_retornaSinGuardar() {
+        UUID msgId = UUID.randomUUID();
+        LocalDateTime readAt = LocalDateTime.now().minusMinutes(1);
+        ChatMessage msg = buildMessage(msgId, senderId, receiverId, readAt);
+
+        when(messageRepository.findById(msgId)).thenReturn(Optional.of(msg));
+
+        ChatMessageResponseDTO result = chatService.markAsRead(msgId, receiverId);
+
+        assertTrue(result.isRead());
+        verify(messageRepository, never()).save(any());
+    }
+
+    @Test
+    void getConversations_contactoSinPresencia_retornaOfflineYNulos() {
+        ChatMessage msg = buildMessage(UUID.randomUUID(), receiverId, senderId, null);
+
+        when(messageRepository.findAllMessagesForUser(senderId)).thenReturn(List.of(msg));
+        when(userPresenceRepository.findByUserId(receiverId)).thenReturn(Optional.empty());
+        when(messageRepository.countUnread(senderId, receiverId)).thenReturn(0L);
+
+        List<ConversationSummaryResponseDTO> result = chatService.getConversations(senderId);
+
+        assertEquals(1, result.size());
+        assertNull(result.get(0).getFriendName());
+        assertNull(result.get(0).getFriendAvatarUrl());
+        assertEquals(OnlineStatus.OFFLINE, result.get(0).getPresenceStatus().getStatus());
+        assertEquals(0L, result.get(0).getUnreadCount());
+    }
+
+    @Test
+    void getConversations_sinMensajes_retornaVacio() {
+        when(messageRepository.findAllMessagesForUser(senderId)).thenReturn(List.of());
+
+        List<ConversationSummaryResponseDTO> result = chatService.getConversations(senderId);
+
+        assertTrue(result.isEmpty());
+        verifyNoInteractions(userPresenceRepository);
+    }
 }
