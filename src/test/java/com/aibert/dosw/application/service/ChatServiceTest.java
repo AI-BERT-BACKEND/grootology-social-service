@@ -196,12 +196,62 @@ class ChatServiceTest {
     }
 
     @Test
-    void getConversations_sinMensajes_retornaVacio() {
+    void getConversaciones_sinMensajes_retornaVacio() {
         when(messageRepository.findAllMessagesForUser(senderId)).thenReturn(List.of());
 
         List<ConversationSummaryResponseDTO> result = chatService.getConversations(senderId);
 
         assertTrue(result.isEmpty());
         verifyNoInteractions(userPresenceRepository);
+    }
+
+    @Test
+    void markAsRead_mensajeNoEncontrado_lanzaExcepcion() {
+        UUID msgId = UUID.randomUUID();
+        when(messageRepository.findById(msgId)).thenReturn(Optional.empty());
+
+        assertThrows(ConnectionRequestException.class,
+                () -> chatService.markAsRead(msgId, receiverId));
+    }
+
+    @Test
+    void deleteMessage_mensajeNoEncontrado_lanzaExcepcion() {
+        UUID msgId = UUID.randomUUID();
+        when(messageRepository.findById(msgId)).thenReturn(Optional.empty());
+
+        assertThrows(ConnectionRequestException.class,
+                () -> chatService.deleteMessage(msgId, senderId));
+    }
+
+    @Test
+    void deleteMessage_yaEliminadoPorEmisor_receptorPuedeBorrar() {
+        UUID msgId = UUID.randomUUID();
+        ChatMessage msg = ChatMessage.builder()
+                .id(msgId).senderId(senderId).receiverId(receiverId)
+                .content("Hola").sentAt(LocalDateTime.now().minusMinutes(5))
+                .readAt(null).deletedBySender(true).deletedByReceiver(false).build();
+
+        when(messageRepository.findById(msgId)).thenReturn(Optional.of(msg));
+        when(messageRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        chatService.deleteMessage(msgId, receiverId);
+
+        verify(messageRepository).save(argThat(m -> m.isDeletedBySender() && m.isDeletedByReceiver()));
+    }
+
+    @Test
+    void deleteMessage_yaEliminadoPorReceptor_emisorPuedeBorrar() {
+        UUID msgId = UUID.randomUUID();
+        ChatMessage msg = ChatMessage.builder()
+                .id(msgId).senderId(senderId).receiverId(receiverId)
+                .content("Hola").sentAt(LocalDateTime.now().minusMinutes(5))
+                .readAt(null).deletedBySender(false).deletedByReceiver(true).build();
+
+        when(messageRepository.findById(msgId)).thenReturn(Optional.of(msg));
+        when(messageRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        chatService.deleteMessage(msgId, senderId);
+
+        verify(messageRepository).save(argThat(m -> m.isDeletedBySender() && m.isDeletedByReceiver()));
     }
 }
