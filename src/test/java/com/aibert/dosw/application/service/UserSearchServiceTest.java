@@ -90,9 +90,9 @@ class UserSearchServiceTest {
                 .thenReturn(List.of(buildPresence(targetId)));
         when(availabilityRepository.findByUserId(targetId)).thenReturn(Optional.of(
                 AvailabilityConfig.builder().userId(targetId).visibility(VisibilityLevel.PRIVATE).build()));
+        // friendshipRepository.existsByUserIds se llama dos veces: en isVisibleTo y en determineRelationship
         when(friendshipRepository.existsByUserIds(requesterId, targetId)).thenReturn(true);
-        when(connectionRequestRepository.existsBySenderIdAndReceiverIdAndStatus(any(), any(), any()))
-                .thenReturn(false);
+        // connectionRequestRepository no se llama porque determineRelationship retorna FRIEND inmediatamente
 
         List<UserSearchResultDTO> result = userSearchService.search("juan", requesterId);
 
