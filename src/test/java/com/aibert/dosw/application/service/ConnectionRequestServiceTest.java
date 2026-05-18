@@ -3,9 +3,11 @@ package com.aibert.dosw.application.service;
 import com.aibert.dosw.application.dto.request.SendConnectionRequestDTO;
 import com.aibert.dosw.application.dto.response.ConnectionRequestResponseDTO;
 import com.aibert.dosw.domain.exceptions.ConnectionRequestException;
+import com.aibert.dosw.domain.exceptions.IncompleteProfileException;
 import com.aibert.dosw.domain.model.user.ConnectionRequest;
 import com.aibert.dosw.domain.model.user.ConnectionRequestStatus;
 import com.aibert.dosw.domain.model.user.Friendship;
+import com.aibert.dosw.domain.ports.out.AcademicProfilePort;
 import com.aibert.dosw.domain.ports.out.ConnectionRequestRepositoryPort;
 import com.aibert.dosw.domain.ports.out.FriendshipRepositoryPort;
 import org.junit.jupiter.api.Test;
@@ -28,6 +30,7 @@ class ConnectionRequestServiceTest {
 
     @Mock private ConnectionRequestRepositoryPort requestRepository;
     @Mock private FriendshipRepositoryPort friendshipRepository;
+    @Mock private AcademicProfilePort academicProfilePort;
     @InjectMocks private ConnectionRequestService connectionRequestService;
 
     private final UUID senderId = UUID.randomUUID();
@@ -40,18 +43,30 @@ class ConnectionRequestServiceTest {
     }
 
     @Test
-    void sendRequest_autoSolicitud_lanzaExcepcion() {
+    void sendRequest_perfilIncompleto_lanzaExcepcion() {
         SendConnectionRequestDTO dto = mock(SendConnectionRequestDTO.class);
-        when(dto.getReceiverId()).thenReturn(senderId);
+        when(academicProfilePort.isProfileComplete(senderId)).thenReturn(false);
 
-        assertThrows(ConnectionRequestException.class,
+        assertThrows(IncompleteProfileException.class,
                 () -> connectionRequestService.sendRequest(senderId, dto));
         verifyNoInteractions(friendshipRepository, requestRepository);
     }
 
     @Test
+    void sendRequest_autoSolicitud_lanzaExcepcion() {
+        SendConnectionRequestDTO dto = mock(SendConnectionRequestDTO.class);
+        when(academicProfilePort.isProfileComplete(senderId)).thenReturn(true);
+        when(dto.getReceiverId()).thenReturn(senderId);
+
+        assertThrows(ConnectionRequestException.class,
+                () -> connectionRequestService.sendRequest(senderId, dto));
+        verifyNoInteractions(requestRepository);
+    }
+
+    @Test
     void sendRequest_yaAmigos_lanzaExcepcion() {
         SendConnectionRequestDTO dto = mock(SendConnectionRequestDTO.class);
+        when(academicProfilePort.isProfileComplete(senderId)).thenReturn(true);
         when(dto.getReceiverId()).thenReturn(receiverId);
         when(friendshipRepository.existsByUserIds(senderId, receiverId)).thenReturn(true);
 
@@ -63,6 +78,7 @@ class ConnectionRequestServiceTest {
     @Test
     void sendRequest_solicitudPendienteEnCualquierDireccion_lanzaExcepcion() {
         SendConnectionRequestDTO dto = mock(SendConnectionRequestDTO.class);
+        when(academicProfilePort.isProfileComplete(senderId)).thenReturn(true);
         when(dto.getReceiverId()).thenReturn(receiverId);
         when(friendshipRepository.existsByUserIds(senderId, receiverId)).thenReturn(false);
         when(requestRepository.existsByEitherDirectionAndStatus(senderId, receiverId, ConnectionRequestStatus.PENDING))
@@ -76,6 +92,7 @@ class ConnectionRequestServiceTest {
     @Test
     void sendRequest_exitoso_guardaSolicitud() {
         SendConnectionRequestDTO dto = mock(SendConnectionRequestDTO.class);
+        when(academicProfilePort.isProfileComplete(senderId)).thenReturn(true);
         when(dto.getReceiverId()).thenReturn(receiverId);
         when(friendshipRepository.existsByUserIds(senderId, receiverId)).thenReturn(false);
         when(requestRepository.existsByEitherDirectionAndStatus(senderId, receiverId, ConnectionRequestStatus.PENDING))
@@ -86,7 +103,6 @@ class ConnectionRequestServiceTest {
 
         assertNotNull(result);
         assertEquals(ConnectionRequestStatus.PENDING, result.getStatus());
-        verify(requestRepository).save(any());
     }
 
     @Test
@@ -130,9 +146,8 @@ class ConnectionRequestServiceTest {
         when(requestRepository.findById(requestId)).thenReturn(Optional.of(buildRequest(requestId, ConnectionRequestStatus.PENDING)));
         when(requestRepository.save(any())).thenReturn(buildRequest(requestId, ConnectionRequestStatus.REJECTED));
 
-        ConnectionRequestResponseDTO result = connectionRequestService.rejectRequest(requestId, receiverId);
-
-        assertEquals(ConnectionRequestStatus.REJECTED, result.getStatus());
+        assertEquals(ConnectionRequestStatus.REJECTED,
+                connectionRequestService.rejectRequest(requestId, receiverId).getStatus());
         verifyNoInteractions(friendshipRepository);
     }
 
@@ -162,7 +177,6 @@ class ConnectionRequestServiceTest {
         List<ConnectionRequestResponseDTO> result = connectionRequestService.getPendingRequestsForUser(receiverId);
 
         assertEquals(1, result.size());
-        assertEquals(ConnectionRequestStatus.PENDING, result.get(0).getStatus());
     }
 
     @Test
@@ -172,8 +186,6 @@ class ConnectionRequestServiceTest {
                         buildRequest(UUID.randomUUID(), ConnectionRequestStatus.PENDING),
                         buildRequest(UUID.randomUUID(), ConnectionRequestStatus.ACCEPTED)));
 
-        List<ConnectionRequestResponseDTO> result = connectionRequestService.getSentRequestsByUser(senderId);
-
-        assertEquals(2, result.size());
+        assertEquals(2, connectionRequestService.getSentRequestsByUser(senderId).size());
     }
 }

@@ -6,7 +6,9 @@ import com.aibert.dosw.domain.exceptions.ConnectionRequestException;
 import com.aibert.dosw.domain.model.user.ConnectionRequest;
 import com.aibert.dosw.domain.model.user.ConnectionRequestStatus;
 import com.aibert.dosw.domain.model.user.Friendship;
+import com.aibert.dosw.domain.exceptions.IncompleteProfileException;
 import com.aibert.dosw.domain.ports.in.ConnectionRequestUseCase;
+import com.aibert.dosw.domain.ports.out.AcademicProfilePort;
 import com.aibert.dosw.domain.ports.out.ConnectionRequestRepositoryPort;
 import com.aibert.dosw.domain.ports.out.FriendshipRepositoryPort;
 import lombok.RequiredArgsConstructor;
@@ -23,9 +25,15 @@ public class ConnectionRequestService implements ConnectionRequestUseCase {
 
     private final ConnectionRequestRepositoryPort requestRepository;
     private final FriendshipRepositoryPort friendshipRepository;
+    private final AcademicProfilePort academicProfilePort;
 
     @Override
     public ConnectionRequestResponseDTO sendRequest(UUID senderId, SendConnectionRequestDTO dto) {
+        if (!academicProfilePort.isProfileComplete(senderId)) {
+            throw new IncompleteProfileException(
+                    "Debes completar tu perfil académico antes de enviar solicitudes de conexión");
+        }
+
         UUID receiverId = dto.getReceiverId();
 
         if (senderId.equals(receiverId)) {

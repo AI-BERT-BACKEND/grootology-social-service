@@ -1,6 +1,7 @@
 package com.aibert.dosw.entrypoints.advice;
 
 import com.aibert.dosw.domain.exceptions.ConnectionRequestException;
+import com.aibert.dosw.domain.exceptions.IncompleteProfileException;
 import com.aibert.dosw.domain.exceptions.InvalidInvitationException;
 import com.aibert.dosw.domain.exceptions.SessionNotFoundException;
 import org.junit.jupiter.api.Test;
@@ -24,7 +25,8 @@ class GlobalExceptionHandlerTest {
 
     @Test
     void handleInvalidInvitation_retorna400() {
-        ResponseEntity<Map<String, String>> r = handler.handleInvalidInvitation(new InvalidInvitationException("error"));
+        ResponseEntity<Map<String, String>> r = handler.handleInvalidInvitation(
+                new InvalidInvitationException("error"));
         assertEquals(HttpStatus.BAD_REQUEST, r.getStatusCode());
     }
 
@@ -34,5 +36,13 @@ class GlobalExceptionHandlerTest {
                 new ConnectionRequestException("Ya son amigos"));
         assertEquals(HttpStatus.BAD_REQUEST, r.getStatusCode());
         assertEquals("Ya son amigos", r.getBody().get("error"));
+    }
+
+    @Test
+    void handleIncompleteProfile_retorna403() {
+        ResponseEntity<Map<String, String>> r = handler.handleIncompleteProfile(
+                new IncompleteProfileException("Perfil incompleto"));
+        assertEquals(HttpStatus.FORBIDDEN, r.getStatusCode());
+        assertEquals("Perfil incompleto", r.getBody().get("error"));
     }
 }
