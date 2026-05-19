@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 1509
 
 spring:
   application:
@@ -20,12 +20,12 @@ jwt:
   secret: ${JWT_SECRET}
 
 app:
-  base-url: ${APP_BASE_URL:http://localhost:8085}
+  base-url: ${APP_BASE_URL:http://localhost:1509}
   referral:
     points-per-referral: ${REFERRAL_POINTS:50}
     weekly-limit: ${REFERRAL_WEEKLY_LIMIT:500}
   cors:
-    allowed-origins: ${CORS_ALLOWED_ORIGINS:https://frontend-umber-seven-28.vercel.app,http://localhost:3000,http://localhost:5173,http://localhost:4200,http://localhost:8080}
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:https://frontend-umber-seven-28.vercel.app,http://localhost:3000,http://localhost:5173,http://localhost:4200,http://localhost:1509}
   services:
     profile-service-url: ${PROFILE_SERVICE_URL:https://aibert-profile-service-qa.yellowwave-cb2d91fc.centralus.azurecontainerapps.io}
   kafka:
@@ -92,6 +92,12 @@ spring:
           auth: true
           starttls:
             enable: true
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+    properties:
+      security.protocol: SASL_SSL
+      sasl.mechanism: PLAIN
+      sasl.jaas.config: "org.apache.kafka.common.services.plain.PlainLoginModule required username=\"$ConnectionString\" password=\"${KAFKA_CONNECTION_STRING}\";"
 
 jwt:
   secret: ${JWT_SECRET}
@@ -121,3 +127,9 @@ spring:
           auth: true
           starttls:
             enable: true
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+    properties:
+      security.protocol: SASL_SSL
+      sasl.mechanism: PLAIN
+      sasl.jaas.config: "org.apache.kafka.common.services.plain.PlainLoginModule required username=\"$ConnectionString\" password=\"${KAFKA_CONNECTION_STRING}\";"

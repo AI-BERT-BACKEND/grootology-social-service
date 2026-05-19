@@ -5,16 +5,18 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class NotificationEvent {
 
-    private String userId;
+    private UUID userId;
     private String type;
     private String title;
     private String message;
     private String severity;
-    private String relatedEntityId;
+    private UUID relatedEntityId;
 }
