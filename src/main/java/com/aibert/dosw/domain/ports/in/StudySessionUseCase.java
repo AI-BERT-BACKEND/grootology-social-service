@@ -9,4 +9,5 @@ public interface StudySessionUseCase {
     StudySessionResponseDTO createSession(UUID creatorId, CreateStudySessionRequestDTO request);
     StudySessionResponseDTO respondToSession(UUID sessionId, UUID userId, boolean accept);
     List<StudySessionResponseDTO> getSessionsForUser(UUID userId);
+    List<StudySessionResponseDTO> getPendingInvitesForUser(UUID userId);
 }

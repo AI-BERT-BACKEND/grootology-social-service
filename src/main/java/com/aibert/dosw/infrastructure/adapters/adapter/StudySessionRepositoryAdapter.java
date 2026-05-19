@@ -32,4 +32,10 @@ public class StudySessionRepositoryAdapter implements StudySessionRepositoryPort
         return jpaRepository.findByParticipantId(userId).stream()
                 .map(mapper::toDomain).collect(Collectors.toList());
     }
+
+    @Override
+    public List<StudySession> findPendingInvitesByUserId(UUID userId) {
+        return jpaRepository.findPendingInvitesByUserId(userId).stream()
+                .map(mapper::toDomain).collect(Collectors.toList());
+    }
 }
