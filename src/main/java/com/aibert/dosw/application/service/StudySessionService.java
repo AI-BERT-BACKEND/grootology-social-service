@@ -86,12 +86,12 @@ public class StudySessionService implements StudySessionUseCase {
         for (UUID participantId : invitedIds) {
             try {
                 notificationPublisher.publish(NotificationEvent.builder()
-                        .userId(participantId.toString())
+                        .userId(participantId)
                         .type("STUDY_SESSION_INVITE")
                         .title("Nueva invitación a sesión de estudio")
                         .message("Te han invitado a una sesión de estudio sobre: " + session.getTopic())
                         .severity("INFO")
-                        .relatedEntityId(session.getId().toString())
+                        .relatedEntityId(session.getId())
                         .build());
             } catch (Exception e) {
                 log.error("No se pudo publicar notificación para participantId={} sessionId={}: {}",

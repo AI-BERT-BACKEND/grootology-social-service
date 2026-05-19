@@ -20,7 +20,7 @@ public class NotificationEventPublisher implements NotificationPublisherPort {
 
     @Override
     public void publish(NotificationEvent event) {
-        kafkaTemplate.send(notificationTopic, event.getUserId(), event)
+        kafkaTemplate.send(notificationTopic, event.getUserId().toString(), event)
                 .whenComplete((result, ex) -> {
                     if (ex != null) {
                         log.error("Error al publicar NotificationEvent para userId={} type={}: {}",
