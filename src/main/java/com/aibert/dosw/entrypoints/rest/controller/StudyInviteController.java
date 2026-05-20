@@ -16,7 +16,7 @@ import java.util.UUID;
 
 @Tag(name = "Invitaciones a sesiones de estudio", description = "Endpoint consumido por el notification-service para obtener invitaciones pendientes de un usuario")
 @RestController
-@RequestMapping("/api/v1/social/user")
+@RequestMapping("/api/social/users")
 @RequiredArgsConstructor
 public class StudyInviteController {
 
@@ -24,7 +24,8 @@ public class StudyInviteController {
 
     @Operation(
             summary = "Obtener invitaciones pendientes",
-            description = "Devuelve las sesiones de estudio con status PENDING donde el usuario es participante (no creador). Consumido por notification-service."
+            description = "Devuelve las sesiones de estudio con status PENDING donde el usuario es participante (no creador). "
+                    + "Ruta completa: GET /api/social/users/{userId}/study-invites/pending. Consumido por notification-service."
     )
     @GetMapping("/{userId}/study-invites/pending")
     public ResponseEntity<List<StudySessionResponseDTO>> getPendingInvites(@PathVariable UUID userId) {
