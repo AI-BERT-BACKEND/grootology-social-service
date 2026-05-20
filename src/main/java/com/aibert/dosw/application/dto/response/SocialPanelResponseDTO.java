@@ -19,5 +19,5 @@ public class SocialPanelResponseDTO {
     private List<ConnectionRequestResponseDTO> pendingConnectionRequests;
     private AvailabilityConfig availability;
     private List<StudySessionResponseDTO> sessions;
-    private String chatStatus;
+    private List<ConversationSummaryResponseDTO> recentConversations;
 }

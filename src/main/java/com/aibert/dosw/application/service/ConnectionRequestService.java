@@ -6,10 +6,15 @@ import com.aibert.dosw.domain.exceptions.ConnectionRequestException;
 import com.aibert.dosw.domain.model.user.ConnectionRequest;
 import com.aibert.dosw.domain.model.user.ConnectionRequestStatus;
 import com.aibert.dosw.domain.model.user.Friendship;
+import com.aibert.dosw.domain.exceptions.IncompleteProfileException;
 import com.aibert.dosw.domain.ports.in.ConnectionRequestUseCase;
+import com.aibert.dosw.domain.ports.out.AcademicProfilePort;
 import com.aibert.dosw.domain.ports.out.ConnectionRequestRepositoryPort;
 import com.aibert.dosw.domain.ports.out.FriendshipRepositoryPort;
+import com.aibert.dosw.domain.ports.out.NotificationPublisherPort;
+import com.aibert.dosw.infrastructure.messaging.event.NotificationEvent;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -17,15 +22,23 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ConnectionRequestService implements ConnectionRequestUseCase {
 
     private final ConnectionRequestRepositoryPort requestRepository;
     private final FriendshipRepositoryPort friendshipRepository;
+    private final AcademicProfilePort academicProfilePort;
+    private final NotificationPublisherPort notificationPublisher;
 
     @Override
     public ConnectionRequestResponseDTO sendRequest(UUID senderId, SendConnectionRequestDTO dto) {
+        if (!academicProfilePort.isProfileComplete(senderId)) {
+            throw new IncompleteProfileException(
+                    "Debes completar tu perfil académico antes de enviar solicitudes de conexión");
+        }
+
         UUID receiverId = dto.getReceiverId();
 
         if (senderId.equals(receiverId)) {
@@ -46,6 +59,19 @@ public class ConnectionRequestService implements ConnectionRequestUseCase {
                 .status(ConnectionRequestStatus.PENDING)
                 .sentAt(LocalDateTime.now())
                 .build());
+
+        try {
+            notificationPublisher.publish(NotificationEvent.builder()
+                    .userId(receiverId)
+                    .type("CONNECTION_REQUEST_RECEIVED")
+                    .title("Nueva solicitud de conexión")
+                    .message("Tienes una nueva solicitud de conexión")
+                    .severity("INFO")
+                    .relatedEntityId(saved.getId())
+                    .build());
+        } catch (Exception e) {
+            log.error("Error publicando notificación de solicitud para receiverId={}: {}", receiverId, e.getMessage());
+        }
 
         return toDTO(saved);
     }
@@ -75,6 +101,19 @@ public class ConnectionRequestService implements ConnectionRequestUseCase {
                 .userId2(existing.getReceiverId())
                 .createdAt(LocalDateTime.now())
                 .build());
+
+        try {
+            notificationPublisher.publish(NotificationEvent.builder()
+                    .userId(existing.getSenderId())
+                    .type("CONNECTION_REQUEST_ACCEPTED")
+                    .title("Solicitud de conexión aceptada")
+                    .message("Tu solicitud de conexión fue aceptada")
+                    .severity("INFO")
+                    .relatedEntityId(requestId)
+                    .build());
+        } catch (Exception e) {
+            log.error("Error publicando notificación de aceptación para senderId={}: {}", existing.getSenderId(), e.getMessage());
+        }
 
         return result;
     }

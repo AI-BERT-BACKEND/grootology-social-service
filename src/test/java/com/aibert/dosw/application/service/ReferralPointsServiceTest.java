@@ -35,7 +35,7 @@ class ReferralPointsServiceTest {
     }
 
     @Test
-    void awardPoints_usuarioNuevo_otorgaPuntos() {
+    void awardPoints_newUser_awardsFullPoints() {
         when(pointsRepository.findByUserId(userId)).thenReturn(Optional.empty());
         when(pointsRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
@@ -49,12 +49,11 @@ class ReferralPointsServiceTest {
     }
 
     @Test
-    void awardPoints_puntosSemanaActual_acumula() {
+    void awardPoints_currentWeekPoints_accumulates() {
         LocalDate monday = LocalDate.now().with(DayOfWeek.MONDAY);
         ReferralPoints existing = ReferralPoints.builder()
                 .id(UUID.randomUUID()).userId(userId)
-                .totalPoints(100).weeklyPoints(100)
-                .weekStart(monday).build();
+                .totalPoints(100).weeklyPoints(100).weekStart(monday).build();
 
         when(pointsRepository.findByUserId(userId)).thenReturn(Optional.of(existing));
         when(pointsRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
@@ -67,12 +66,11 @@ class ReferralPointsServiceTest {
     }
 
     @Test
-    void awardPoints_semanaAnterior_resetaSemanalesYOtorga() {
+    void awardPoints_previousWeek_resetsWeeklyAndAwards() {
         LocalDate lastMonday = LocalDate.now().with(DayOfWeek.MONDAY).minusWeeks(1);
         ReferralPoints existing = ReferralPoints.builder()
                 .id(UUID.randomUUID()).userId(userId)
-                .totalPoints(500).weeklyPoints(500)
-                .weekStart(lastMonday).build();
+                .totalPoints(500).weeklyPoints(500).weekStart(lastMonday).build();
 
         when(pointsRepository.findByUserId(userId)).thenReturn(Optional.of(existing));
         when(pointsRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
@@ -86,12 +84,11 @@ class ReferralPointsServiceTest {
     }
 
     @Test
-    void awardPoints_limiteSemanaalAlcanzado_noOtorgaPuntos() {
+    void awardPoints_weeklyLimitReached_awardsNothing() {
         LocalDate monday = LocalDate.now().with(DayOfWeek.MONDAY);
         ReferralPoints existing = ReferralPoints.builder()
                 .id(UUID.randomUUID()).userId(userId)
-                .totalPoints(1000).weeklyPoints(500)
-                .weekStart(monday).build();
+                .totalPoints(1000).weeklyPoints(500).weekStart(monday).build();
 
         when(pointsRepository.findByUserId(userId)).thenReturn(Optional.of(existing));
 
@@ -104,12 +101,11 @@ class ReferralPointsServiceTest {
     }
 
     @Test
-    void awardPoints_limiteParcial_otorgaRestante() {
+    void awardPoints_partialLimit_awardsRemaining() {
         LocalDate monday = LocalDate.now().with(DayOfWeek.MONDAY);
         ReferralPoints existing = ReferralPoints.builder()
                 .id(UUID.randomUUID()).userId(userId)
-                .totalPoints(800).weeklyPoints(470)
-                .weekStart(monday).build();
+                .totalPoints(800).weeklyPoints(470).weekStart(monday).build();
 
         when(pointsRepository.findByUserId(userId)).thenReturn(Optional.of(existing));
         when(pointsRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
@@ -123,7 +119,7 @@ class ReferralPointsServiceTest {
     }
 
     @Test
-    void getPoints_usuarioSinPuntos_retornaCeros() {
+    void getPoints_noPointsYet_returnsZeros() {
         when(pointsRepository.findByUserId(userId)).thenReturn(Optional.empty());
 
         ReferralPointsResponseDTO result = referralPointsService.getPoints(userId);

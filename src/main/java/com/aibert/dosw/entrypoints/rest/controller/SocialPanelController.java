@@ -3,6 +3,8 @@ package com.aibert.dosw.entrypoints.rest.controller;
 import com.aibert.dosw.application.dto.response.SocialPanelResponseDTO;
 import com.aibert.dosw.domain.model.user.SocialAction;
 import com.aibert.dosw.domain.ports.in.SocialPanelUseCase;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
+@Tag(name = "Panel Social", description = "Panel central del módulo social: estado de presencia, acciones disponibles e historial de chat")
 @RestController
 @RequestMapping("/api/social/users")
 @RequiredArgsConstructor
@@ -20,6 +23,11 @@ public class SocialPanelController {
 
     private final SocialPanelUseCase socialPanelUseCase;
 
+    @Operation(
+        summary = "Obtener panel social",
+        description = "Devuelve el panel social del usuario. Sin acción retorna un resumen completo. " +
+                      "Con acción específica (INVITAR, BUSCAR, LISTAR, CHAT) retorna solo los datos relevantes para esa sección."
+    )
     @GetMapping("/{userId}/panel")
     public ResponseEntity<SocialPanelResponseDTO> getPanel(
             @PathVariable UUID userId,

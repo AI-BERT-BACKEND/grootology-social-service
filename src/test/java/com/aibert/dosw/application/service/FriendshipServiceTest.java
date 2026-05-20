@@ -40,13 +40,13 @@ class FriendshipServiceTest {
     private UserPresence buildPresence(UUID uid, LocalDateTime lastSeen) {
         return UserPresence.builder()
                 .id(UUID.randomUUID()).userId(uid)
-                .name("Nombre").email("amigo@test.com")
+                .name("Friend Name").email("friend@test.com")
                 .avatarUrl("https://cdn.test.com/avatar.jpg")
                 .lastSeen(lastSeen).build();
     }
 
     @Test
-    void listFriends_sinFiltro_retornaTodasLasAmistades() {
+    void listFriends_noFilter_returnsAllFriends() {
         Friendship f = buildFriendship(userId, friendId);
         UserPresence presence = buildPresence(friendId, LocalDateTime.now().minusMinutes(2));
 
@@ -58,12 +58,12 @@ class FriendshipServiceTest {
         assertEquals(1, result.size());
         assertEquals(friendId, result.get(0).getFriendId());
         assertEquals(OnlineStatus.ONLINE, result.get(0).getPresenceStatus().getStatus());
-        assertEquals("Nombre", result.get(0).getFriendName());
+        assertEquals("Friend Name", result.get(0).getFriendName());
         assertEquals("https://cdn.test.com/avatar.jpg", result.get(0).getFriendAvatarUrl());
     }
 
     @Test
-    void listFriends_usuarioEsUserId2_resolveAmigoCorrecto() {
+    void listFriends_userIsUserId2_resolvesCorrectFriend() {
         Friendship f = buildFriendship(friendId, userId);
         UserPresence presence = buildPresence(friendId, LocalDateTime.now().minusMinutes(1));
 
@@ -77,15 +77,15 @@ class FriendshipServiceTest {
     }
 
     @Test
-    void listFriends_filtroOnline_retornaSoloOnline() {
-        UUID friendOffline = UUID.randomUUID();
+    void listFriends_onlineFilter_returnsOnlyOnline() {
+        UUID offlineFriend = UUID.randomUUID();
         when(friendshipRepository.findByUserId(userId)).thenReturn(List.of(
                 buildFriendship(userId, friendId),
-                buildFriendship(userId, friendOffline)));
+                buildFriendship(userId, offlineFriend)));
         when(userPresenceRepository.findByUserId(friendId))
                 .thenReturn(Optional.of(buildPresence(friendId, LocalDateTime.now().minusMinutes(1))));
-        when(userPresenceRepository.findByUserId(friendOffline))
-                .thenReturn(Optional.of(buildPresence(friendOffline, LocalDateTime.now().minusHours(1))));
+        when(userPresenceRepository.findByUserId(offlineFriend))
+                .thenReturn(Optional.of(buildPresence(offlineFriend, LocalDateTime.now().minusHours(1))));
 
         List<FriendshipResponseDTO> result = friendshipService.listFriends(userId, OnlineStatus.ONLINE);
 
@@ -94,24 +94,24 @@ class FriendshipServiceTest {
     }
 
     @Test
-    void listFriends_filtroOffline_retornaSoloOffline() {
-        UUID friendOffline = UUID.randomUUID();
+    void listFriends_offlineFilter_returnsOnlyOffline() {
+        UUID offlineFriend = UUID.randomUUID();
         when(friendshipRepository.findByUserId(userId)).thenReturn(List.of(
                 buildFriendship(userId, friendId),
-                buildFriendship(userId, friendOffline)));
+                buildFriendship(userId, offlineFriend)));
         when(userPresenceRepository.findByUserId(friendId))
                 .thenReturn(Optional.of(buildPresence(friendId, LocalDateTime.now().minusMinutes(1))));
-        when(userPresenceRepository.findByUserId(friendOffline))
-                .thenReturn(Optional.of(buildPresence(friendOffline, LocalDateTime.now().minusHours(1))));
+        when(userPresenceRepository.findByUserId(offlineFriend))
+                .thenReturn(Optional.of(buildPresence(offlineFriend, LocalDateTime.now().minusHours(1))));
 
         List<FriendshipResponseDTO> result = friendshipService.listFriends(userId, OnlineStatus.OFFLINE);
 
         assertEquals(1, result.size());
-        assertEquals(friendOffline, result.get(0).getFriendId());
+        assertEquals(offlineFriend, result.get(0).getFriendId());
     }
 
     @Test
-    void listFriends_sinPresenciaRegistrada_retornaOfflineYSinAvatar() {
+    void listFriends_noPresence_returnsOfflineWithNullAvatar() {
         when(friendshipRepository.findByUserId(userId)).thenReturn(List.of(buildFriendship(userId, friendId)));
         when(userPresenceRepository.findByUserId(friendId)).thenReturn(Optional.empty());
 
@@ -123,7 +123,7 @@ class FriendshipServiceTest {
     }
 
     @Test
-    void listFriends_listaVacia_retornaVacio() {
+    void listFriends_noFriendships_returnsEmpty() {
         when(friendshipRepository.findByUserId(userId)).thenReturn(List.of());
 
         assertTrue(friendshipService.listFriends(userId, null).isEmpty());
@@ -131,7 +131,7 @@ class FriendshipServiceTest {
     }
 
     @Test
-    void removeFriend_existeAmistad_elimina() {
+    void removeFriend_friendshipExists_removes() {
         when(friendshipRepository.existsByUserIds(userId, friendId)).thenReturn(true);
         doNothing().when(friendshipRepository).deleteByUserIds(userId, friendId);
 
@@ -140,7 +140,7 @@ class FriendshipServiceTest {
     }
 
     @Test
-    void removeFriend_noExisteAmistad_lanzaExcepcion() {
+    void removeFriend_noFriendship_throwsException() {
         when(friendshipRepository.existsByUserIds(userId, friendId)).thenReturn(false);
 
         assertThrows(ConnectionRequestException.class,

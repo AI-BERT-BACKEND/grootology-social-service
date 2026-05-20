@@ -2,10 +2,13 @@ package com.aibert.dosw.application.service;
 
 import com.aibert.dosw.application.dto.response.UserPresenceResponseDTO;
 import com.aibert.dosw.application.dto.response.UserSearchResultDTO;
+import com.aibert.dosw.domain.model.user.AvailabilityConfig;
 import com.aibert.dosw.domain.model.user.ConnectionRequestStatus;
 import com.aibert.dosw.domain.model.user.RelationshipStatus;
 import com.aibert.dosw.domain.model.user.UserPresence;
+import com.aibert.dosw.domain.model.user.VisibilityLevel;
 import com.aibert.dosw.domain.ports.in.UserSearchUseCase;
+import com.aibert.dosw.domain.ports.out.AvailabilityRepositoryPort;
 import com.aibert.dosw.domain.ports.out.ConnectionRequestRepositoryPort;
 import com.aibert.dosw.domain.ports.out.FriendshipRepositoryPort;
 import com.aibert.dosw.domain.ports.out.UserPresenceRepositoryPort;
@@ -23,6 +26,7 @@ public class UserSearchService implements UserSearchUseCase {
     private final UserPresenceRepositoryPort userPresenceRepository;
     private final FriendshipRepositoryPort friendshipRepository;
     private final ConnectionRequestRepositoryPort connectionRequestRepository;
+    private final AvailabilityRepositoryPort availabilityRepository;
 
     @Override
     public List<UserSearchResultDTO> search(String query, UUID requesterId) {
@@ -30,8 +34,24 @@ public class UserSearchService implements UserSearchUseCase {
 
         return userPresenceRepository.searchByNameOrEmail(query.trim(), requesterId)
                 .stream()
+                .filter(u -> isVisibleTo(u.getUserId(), requesterId))
                 .map(u -> buildResult(u, requesterId))
                 .collect(Collectors.toList());
+    }
+
+    private boolean isVisibleTo(UUID targetUserId, UUID requesterId) {
+        AvailabilityConfig config = availabilityRepository.findByUserId(targetUserId)
+                .orElse(AvailabilityConfig.builder()
+                        .userId(targetUserId)
+                        .visibility(VisibilityLevel.PUBLIC)
+                        .build());
+
+        return switch (config.getVisibility()) {
+            case PUBLIC -> true;
+            case PRIVATE -> friendshipRepository.existsByUserIds(requesterId, targetUserId);
+            case SPECIFIC -> config.getAuthorizedFriends() != null
+                    && config.getAuthorizedFriends().contains(requesterId);
+        };
     }
 
     private UserSearchResultDTO buildResult(UserPresence u, UUID requesterId) {

@@ -22,7 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class SocialPanelControllerTest {
 
     @Test
-    void getPanel_conAccion_enumEsProcesado() throws Exception {
+    void getPanel_withAction_enumIsProcessed() throws Exception {
         UUID userId = UUID.randomUUID();
         SocialPanelUseCase useCase = mock(SocialPanelUseCase.class);
         MockMvc mockMvc = MockMvcBuilders.standaloneSetup(new SocialPanelController(useCase)).build();

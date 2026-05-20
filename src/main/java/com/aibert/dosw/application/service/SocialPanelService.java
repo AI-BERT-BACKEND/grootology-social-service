@@ -4,6 +4,7 @@ import com.aibert.dosw.application.dto.response.SocialActionItemResponseDTO;
 import com.aibert.dosw.application.dto.response.SocialPanelResponseDTO;
 import com.aibert.dosw.domain.model.user.SocialAction;
 import com.aibert.dosw.domain.ports.in.AvailabilityUseCase;
+import com.aibert.dosw.domain.ports.in.ChatUseCase;
 import com.aibert.dosw.domain.ports.in.ConnectionRequestUseCase;
 import com.aibert.dosw.domain.ports.in.InvitationUseCase;
 import com.aibert.dosw.domain.ports.in.SocialPanelUseCase;
@@ -24,6 +25,7 @@ public class SocialPanelService implements SocialPanelUseCase {
     private final StudySessionUseCase studySessionUseCase;
     private final UserPresenceUseCase userPresenceUseCase;
     private final ConnectionRequestUseCase connectionRequestUseCase;
+    private final ChatUseCase chatUseCase;
 
     @Override
     public SocialPanelResponseDTO getPanel(UUID userId, SocialAction action) {
@@ -39,7 +41,7 @@ public class SocialPanelService implements SocialPanelUseCase {
                         ? connectionRequestUseCase.getPendingRequestsForUser(userId) : null)
                 .availability(shouldIncludeAvailability(action) ? availabilityUseCase.getConfig(userId) : null)
                 .sessions(shouldIncludeSessions(action) ? studySessionUseCase.getSessionsForUser(userId) : null)
-                .chatStatus(shouldIncludeChat(action) ? "CHAT_PENDING_BACKEND_INTEGRATION" : null)
+                .recentConversations(shouldIncludeChat(action) ? chatUseCase.getConversations(userId) : null)
                 .build();
     }
 
@@ -69,9 +71,9 @@ public class SocialPanelService implements SocialPanelUseCase {
                 SocialActionItemResponseDTO.builder()
                         .action(SocialAction.CHAT)
                         .label("Chat")
-                        .endpoint("/api/social/users/" + userId + "/panel?action=CHAT")
+                        .endpoint("/api/social/chat/conversations/" + userId)
                         .method("GET")
-                        .description("Estado del modulo de chat social.")
+                        .description("Listado de conversaciones activas del usuario.")
                         .build()
         );
     }

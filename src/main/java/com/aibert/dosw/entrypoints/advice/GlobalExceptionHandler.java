@@ -1,6 +1,7 @@
 package com.aibert.dosw.entrypoints.advice;
 
 import com.aibert.dosw.domain.exceptions.ConnectionRequestException;
+import com.aibert.dosw.domain.exceptions.IncompleteProfileException;
 import com.aibert.dosw.domain.exceptions.InvalidInvitationException;
 import com.aibert.dosw.domain.exceptions.SessionNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -35,5 +36,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ConnectionRequestException.class)
     public ResponseEntity<Map<String, String>> handleConnectionRequest(ConnectionRequestException ex) {
         return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()));
+    }
+
+    @ExceptionHandler(IncompleteProfileException.class)
+    public ResponseEntity<Map<String, String>> handleIncompleteProfile(IncompleteProfileException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", ex.getMessage()));
     }
 }
