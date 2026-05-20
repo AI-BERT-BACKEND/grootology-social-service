@@ -11,8 +11,11 @@ import com.aibert.dosw.domain.model.user.UserPresence;
 import com.aibert.dosw.domain.ports.in.ChatUseCase;
 import com.aibert.dosw.domain.ports.out.ChatMessageRepositoryPort;
 import com.aibert.dosw.domain.ports.out.FriendshipRepositoryPort;
+import com.aibert.dosw.domain.ports.out.NotificationPublisherPort;
 import com.aibert.dosw.domain.ports.out.UserPresenceRepositoryPort;
+import com.aibert.dosw.infrastructure.messaging.event.NotificationEvent;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -23,6 +26,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChatService implements ChatUseCase {
@@ -30,6 +34,7 @@ public class ChatService implements ChatUseCase {
     private final ChatMessageRepositoryPort messageRepository;
     private final FriendshipRepositoryPort friendshipRepository;
     private final UserPresenceRepositoryPort userPresenceRepository;
+    private final NotificationPublisherPort notificationPublisher;
 
     @Override
     public ChatMessageResponseDTO sendMessage(UUID senderId, SendMessageRequestDTO request) {
@@ -50,6 +55,19 @@ public class ChatService implements ChatUseCase {
                 .deletedBySender(false)
                 .deletedByReceiver(false)
                 .build());
+
+        try {
+            notificationPublisher.publish(NotificationEvent.builder()
+                    .userId(receiverId)
+                    .type("NEW_CHAT_MESSAGE")
+                    .title("Nuevo mensaje")
+                    .message("Tienes un nuevo mensaje")
+                    .severity("INFO")
+                    .relatedEntityId(saved.getId())
+                    .build());
+        } catch (Exception e) {
+            log.error("Error publicando notificación de chat para receiverId={}: {}", receiverId, e.getMessage());
+        }
 
         return toDTO(saved);
     }

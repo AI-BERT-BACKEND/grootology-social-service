@@ -30,7 +30,7 @@ app:
     profile-service-url: ${PROFILE_SERVICE_URL:https://aibert-profile-service-qa.yellowwave-cb2d91fc.centralus.azurecontainerapps.io}
   kafka:
     topic:
-      notification-events: ${KAFKA_NOTIFICATION_TOPIC:notification-events}
+      notification-events: ${KAFKA_NOTIFICATION_TOPIC:social.events}
 
 spring:
   kafka:
