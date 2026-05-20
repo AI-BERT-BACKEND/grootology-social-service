@@ -99,10 +99,7 @@ spring:
     properties:
       security.protocol: SASL_SSL
       sasl.mechanism: PLAIN
-      sasl.jaas.config: "org.apache.kafka.common.services.plain.PlainLoginModule required username=\"$ConnectionString\" password=\"${KAFKA_CONNECTION_STRING}\";"
-
-jwt:
-  secret: ${JWT_SECRET}
+      sasl.jaas.config: "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"$ConnectionString\" password=\"${KAFKA_CONNECTION_STRING}\";"
 
 ---
 spring:
@@ -138,4 +135,4 @@ spring:
     properties:
       security.protocol: SASL_SSL
       sasl.mechanism: PLAIN
-      sasl.jaas.config: "org.apache.kafka.common.services.plain.PlainLoginModule required username=\"$ConnectionString\" password=\"${KAFKA_CONNECTION_STRING}\";"
+      sasl.jaas.config: "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"$ConnectionString\" password=\"${KAFKA_CONNECTION_STRING}\";"
