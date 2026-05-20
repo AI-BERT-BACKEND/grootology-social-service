@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
-@Tag(name = "Solicitudes de conexión", description = "Enviar, aceptar y rechazar solicitudes de amistad entre usuarios registrados en AI.BERT")
+@Tag(name = "Connection Requests", description = "Send, accept and reject friend requests between registered users in AI.BERT")
 @RestController
 @RequestMapping("/api/social/connections")
 @RequiredArgsConstructor
@@ -22,7 +22,7 @@ public class ConnectionRequestController {
 
     private final ConnectionRequestUseCase connectionRequestUseCase;
 
-    @Operation(summary = "Enviar solicitud", description = "Envía una solicitud de amistad a otro usuario registrado. Requiere perfil académico completo (RN-02). No se permiten solicitudes duplicadas ni auto-solicitudes.")
+    @Operation(summary = "Send friend request", description = "Sends a friend request to another registered user. Requires a complete academic profile. Duplicate requests and self-requests are not allowed.")
     @PostMapping("/{senderId}/request")
     public ResponseEntity<ConnectionRequestResponseDTO> sendRequest(
             @PathVariable UUID senderId,
@@ -31,7 +31,7 @@ public class ConnectionRequestController {
                 .body(connectionRequestUseCase.sendRequest(senderId, request));
     }
 
-    @Operation(summary = "Aceptar solicitud", description = "Acepta una solicitud de conexión pendiente. Solo puede ejecutarlo el receptor. Al aceptar se crea automáticamente la amistad.")
+    @Operation(summary = "Accept friend request", description = "Accepts a pending connection request. Only the receiver can do this. Once accepted, the friendship is automatically created.")
     @PutMapping("/{requestId}/accept")
     public ResponseEntity<ConnectionRequestResponseDTO> acceptRequest(
             @PathVariable UUID requestId,
@@ -39,7 +39,7 @@ public class ConnectionRequestController {
         return ResponseEntity.ok(connectionRequestUseCase.acceptRequest(requestId, receiverId));
     }
 
-    @Operation(summary = "Rechazar solicitud", description = "Rechaza una solicitud de conexión pendiente. Solo puede ejecutarlo el receptor.")
+    @Operation(summary = "Reject friend request", description = "Rejects a pending connection request. Only the receiver can perform this action.")
     @PutMapping("/{requestId}/reject")
     public ResponseEntity<ConnectionRequestResponseDTO> rejectRequest(
             @PathVariable UUID requestId,
@@ -47,14 +47,14 @@ public class ConnectionRequestController {
         return ResponseEntity.ok(connectionRequestUseCase.rejectRequest(requestId, receiverId));
     }
 
-    @Operation(summary = "Solicitudes pendientes recibidas", description = "Devuelve todas las solicitudes de conexión que el usuario tiene pendientes de responder.")
+    @Operation(summary = "Get received pending requests", description = "Returns all pending connection requests that the user has not yet responded to.")
     @GetMapping("/pending/{receiverId}")
     public ResponseEntity<List<ConnectionRequestResponseDTO>> getPendingRequests(
             @PathVariable UUID receiverId) {
         return ResponseEntity.ok(connectionRequestUseCase.getPendingRequestsForUser(receiverId));
     }
 
-    @Operation(summary = "Solicitudes enviadas", description = "Devuelve todas las solicitudes de conexión enviadas por el usuario, con su estado actual.")
+    @Operation(summary = "Get sent requests", description = "Returns all connection requests sent by the user along with their current status.")
     @GetMapping("/sent/{senderId}")
     public ResponseEntity<List<ConnectionRequestResponseDTO>> getSentRequests(
             @PathVariable UUID senderId) {

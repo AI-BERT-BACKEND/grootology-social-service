@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
-@Tag(name = "Búsqueda de usuarios", description = "Búsqueda por nombre o correo respetando privacidad RN-05 (PUBLIC / PRIVATE / SPECIFIC)")
+@Tag(name = "User Search", description = "Search users by name or email while respecting their privacy settings (PUBLIC / PRIVATE / SPECIFIC)")
 @RestController
 @RequestMapping("/api/social/users")
 @RequiredArgsConstructor
@@ -19,7 +19,7 @@ public class UserSearchController {
 
     private final UserSearchUseCase userSearchUseCase;
 
-    @Operation(summary = "Buscar usuarios", description = "Busca usuarios por nombre o correo institucional. Aplica privacidad RN-05: usuarios PRIVATE solo aparecen para sus amigos; usuarios SPECIFIC solo para quienes están en su lista autorizada. Cada resultado incluye estado online y relación actual.")
+    @Operation(summary = "Search users", description = "Searches for users by name or institutional email. Respects privacy settings: PRIVATE users only appear to their friends, SPECIFIC users only to those on their authorized list. Each result includes the online status and current relationship with the requester.")
     @GetMapping("/search")
     public ResponseEntity<List<UserSearchResultDTO>> search(
             @RequestParam String q,

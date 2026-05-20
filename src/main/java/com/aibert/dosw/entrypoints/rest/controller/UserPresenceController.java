@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
-@Tag(name = "Presencia", description = "Estado online/offline de usuarios: heartbeat y consulta de estado en tiempo real")
+@Tag(name = "User Presence", description = "Online/offline status for users: heartbeat and real-time status check")
 @RestController
 @RequestMapping("/api/social/users")
 @RequiredArgsConstructor
@@ -20,7 +20,7 @@ public class UserPresenceController {
 
     private final UserPresenceUseCase userPresenceUseCase;
 
-    @Operation(summary = "Heartbeat de presencia", description = "El cliente llama a este endpoint periódicamente para indicar que el usuario está activo. Si el último heartbeat supera 5 minutos, el usuario pasa a OFFLINE. También registra o actualiza nombre y avatar.")
+    @Operation(summary = "Presence heartbeat", description = "The client calls this endpoint periodically to indicate the user is active. If the last heartbeat was more than 5 minutes ago, the user is set to OFFLINE. Also registers or updates the user's name and avatar.")
     @PutMapping("/{userId}/heartbeat")
     public ResponseEntity<UserPresenceResponseDTO> heartbeat(
             @PathVariable UUID userId,
@@ -28,7 +28,7 @@ public class UserPresenceController {
         return ResponseEntity.ok(userPresenceUseCase.heartbeat(userId, request.getEmail(), request.getName(), request.getAvatarUrl()));
     }
 
-    @Operation(summary = "Consultar estado de presencia", description = "Devuelve el estado actual de un usuario: ONLINE si hizo heartbeat en los últimos 5 minutos, OFFLINE en caso contrario.")
+    @Operation(summary = "Get presence status", description = "Returns the current status of a user: ONLINE if they sent a heartbeat in the last 5 minutes, OFFLINE otherwise.")
     @GetMapping("/{userId}/status")
     public ResponseEntity<UserPresenceResponseDTO> getStatus(@PathVariable UUID userId) {
         return ResponseEntity.ok(userPresenceUseCase.getStatus(userId));

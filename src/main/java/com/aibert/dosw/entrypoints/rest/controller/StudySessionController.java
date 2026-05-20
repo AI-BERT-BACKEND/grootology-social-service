@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
-@Tag(name = "Sesiones de estudio", description = "Creación, respuesta y listado de sesiones de estudio colaborativas")
+@Tag(name = "Study Sessions", description = "Create, respond to and list collaborative study sessions")
 @RestController
 @RequestMapping("/api/social/sessions")
 @RequiredArgsConstructor
@@ -22,7 +22,7 @@ public class StudySessionController {
 
     private final StudySessionUseCase studySessionUseCase;
 
-    @Operation(summary = "Crear sesión de estudio", description = "Crea una nueva sesión de estudio con participantes, tema, fecha y duración. El creador queda incluido automáticamente.")
+    @Operation(summary = "Create study session", description = "Creates a new study session with participants, topic, date and duration. The creator is automatically included as a participant.")
     @PostMapping("/{creatorId}")
     public ResponseEntity<StudySessionResponseDTO> createSession(
             @PathVariable UUID creatorId,
@@ -31,7 +31,7 @@ public class StudySessionController {
                 .body(studySessionUseCase.createSession(creatorId, request));
     }
 
-    @Operation(summary = "Responder invitación a sesión", description = "Acepta o rechaza una invitación a sesión de estudio. El parámetro `accept=true` acepta; `accept=false` rechaza.")
+    @Operation(summary = "Respond to session invite", description = "Accepts or rejects a study session invitation. Use `accept=true` to accept and `accept=false` to reject.")
     @PutMapping("/{sessionId}/respond")
     public ResponseEntity<StudySessionResponseDTO> respond(
             @PathVariable UUID sessionId,
@@ -40,7 +40,7 @@ public class StudySessionController {
         return ResponseEntity.ok(studySessionUseCase.respondToSession(sessionId, userId, accept));
     }
 
-    @Operation(summary = "Listar sesiones del usuario", description = "Devuelve todas las sesiones de estudio en las que el usuario es creador o participante.")
+    @Operation(summary = "List user sessions", description = "Returns all study sessions where the user is either the creator or a participant.")
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<StudySessionResponseDTO>> getSessionsForUser(@PathVariable UUID userId) {
         return ResponseEntity.ok(studySessionUseCase.getSessionsForUser(userId));
