@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.UUID;
 
-@Tag(name = "Invitaciones a sesiones de estudio", description = "Endpoint consumido por el notification-service para obtener invitaciones pendientes de un usuario")
+@Tag(name = "Study Session Invites", description = "Endpoint consumed by the notification service to retrieve pending study session invites for a user")
 @RestController
 @RequestMapping("/api/v1/social/user")
 @RequiredArgsConstructor
@@ -23,8 +23,8 @@ public class StudyInviteController {
     private final StudySessionUseCase studySessionUseCase;
 
     @Operation(
-            summary = "Obtener invitaciones pendientes",
-            description = "Devuelve las sesiones de estudio con status PENDING donde el usuario es participante (no creador). Consumido por notification-service."
+            summary = "Get pending study invites",
+            description = "Returns study sessions with PENDING status where the user is a participant but not the creator. Used by the notification service."
     )
     @GetMapping("/{userId}/study-invites/pending")
     public ResponseEntity<List<StudySessionResponseDTO>> getPendingInvites(@PathVariable UUID userId) {

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
-@Tag(name = "Amigos", description = "Listado de amigos con estado online/offline y eliminación de amistad")
+@Tag(name = "Friends", description = "List friends with their online/offline status and remove friendships")
 @RestController
 @RequestMapping("/api/social/friends")
 @RequiredArgsConstructor
@@ -20,7 +20,7 @@ public class FriendshipController {
 
     private final FriendshipUseCase friendshipUseCase;
 
-    @Operation(summary = "Listar amigos", description = "Devuelve la lista de amigos con su estado de presencia (nombre, avatar, ONLINE/OFFLINE). Acepta filtro opcional por estado de conexión.")
+    @Operation(summary = "List friends", description = "Returns the list of friends with their presence status (name, avatar, ONLINE/OFFLINE). Accepts an optional filter by connection status.")
     @GetMapping("/{userId}")
     public ResponseEntity<List<FriendshipResponseDTO>> listFriends(
             @PathVariable UUID userId,
@@ -28,7 +28,7 @@ public class FriendshipController {
         return ResponseEntity.ok(friendshipUseCase.listFriends(userId, status));
     }
 
-    @Operation(summary = "Eliminar amigo", description = "Elimina la amistad entre dos usuarios. La acción es irreversible; para reconectarse habría que enviar una nueva solicitud.")
+    @Operation(summary = "Remove friend", description = "Removes the friendship between two users. This action is irreversible. To reconnect, a new friend request must be sent.")
     @DeleteMapping("/{userId}/{friendId}")
     public ResponseEntity<Void> removeFriend(
             @PathVariable UUID userId,

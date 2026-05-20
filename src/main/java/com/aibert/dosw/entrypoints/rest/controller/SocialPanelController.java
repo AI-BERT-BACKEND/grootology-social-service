@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
-@Tag(name = "Panel Social", description = "Panel central del módulo social: estado de presencia, acciones disponibles e historial de chat")
+@Tag(name = "Social Panel", description = "Central hub of the social module: presence status, available actions and chat history")
 @RestController
 @RequestMapping("/api/social/users")
 @RequiredArgsConstructor
@@ -24,9 +24,8 @@ public class SocialPanelController {
     private final SocialPanelUseCase socialPanelUseCase;
 
     @Operation(
-        summary = "Obtener panel social",
-        description = "Devuelve el panel social del usuario. Sin acción retorna un resumen completo. " +
-                      "Con acción específica (INVITAR, BUSCAR, LISTAR, CHAT) retorna solo los datos relevantes para esa sección."
+        summary = "Get social panel",
+        description = "Returns the user's social panel. Without an action it returns a full summary. With a specific action (INVITE, SEARCH, LIST, CHAT) it returns only the data relevant to that section."
     )
     @GetMapping("/{userId}/panel")
     public ResponseEntity<SocialPanelResponseDTO> getPanel(
