@@ -279,3 +279,5 @@ $RECYCLE.BIN/
 .nfs*
 postgres_data/
 /uploads/
+# Claude Code / Cowork (configuracion local, no debe versionarse)
+.claude/
