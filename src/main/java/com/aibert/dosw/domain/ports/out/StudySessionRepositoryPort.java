@@ -9,4 +9,5 @@ public interface StudySessionRepositoryPort {
     StudySession save(StudySession session);
     Optional<StudySession> findById(UUID id);
     List<StudySession> findByParticipantId(UUID userId);
+    List<StudySession> findPendingInvitesByUserId(UUID userId);
 }

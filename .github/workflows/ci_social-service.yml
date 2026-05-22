@@ -174,7 +174,7 @@ jobs:
         with:
           images: ghcr.io/ai-bert-backend/grootology-social-service
           tags: |
-            type=sha,prefix=,format=short
+            type=sha,prefix=,format=long
             type=raw,value=qa-latest,enable=${{ github.ref == 'refs/heads/develop'}}
             type=raw,value=prod-latest,enable=${{ github.ref == 'refs/heads/main' }}
 
@@ -208,7 +208,7 @@ jobs:
         with:
           resourceGroup: aibert-rg
           containerAppName: aibert-social-service-qa
-          imageToDeploy: ghcr.io/ai-bert-backend/grootology-social-service:qa-latest
+          imageToDeploy: ghcr.io/ai-bert-backend/grootology-social-service:${{ github.sha }}
           registryUrl: ghcr.io
           registryUsername: ${{ github.actor }}
           registryPassword: ${{ secrets.GHCR_TOKEN }}
@@ -233,7 +233,7 @@ jobs:
         with:
           resourceGroup: aibert-rg
           containerAppName: aibert-social-service-prod
-          imageToDeploy: ghcr.io/ai-bert-backend/grootology-social-service:prod-latest
+          imageToDeploy: ghcr.io/ai-bert-backend/grootology-social-service:${{ github.sha }}
           registryUrl: ghcr.io
           registryUsername: ${{ github.actor }}
           registryPassword: ${{ secrets.GHCR_TOKEN }}

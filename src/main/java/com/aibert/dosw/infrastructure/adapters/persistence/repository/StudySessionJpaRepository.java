@@ -9,4 +9,7 @@ import java.util.UUID;
 public interface StudySessionJpaRepository extends JpaRepository<StudySessionEntity, UUID> {
     @Query("SELECT s FROM StudySessionEntity s WHERE :userId MEMBER OF s.participantIds")
     List<StudySessionEntity> findByParticipantId(UUID userId);
+
+    @Query("SELECT s FROM StudySessionEntity s WHERE :userId MEMBER OF s.participantIds AND s.creatorId <> :userId AND s.status = 'PENDING'")
+    List<StudySessionEntity> findPendingInvitesByUserId(UUID userId);
 }
