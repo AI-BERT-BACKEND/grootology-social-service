@@ -27,19 +27,31 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
-        String header = request.getHeader("Authorization");
-        if (header != null && header.startsWith("Bearer ")) {
-            try {
-                String token = header.substring(7);
-                Key key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-                Claims claims = Jwts.parserBuilder().setSigningKey(key).build()
-                        .parseClaimsJws(token).getBody();
-                String email = claims.getSubject();
-                UsernamePasswordAuthenticationToken auth =
-                        new UsernamePasswordAuthenticationToken(email, null, List.of());
-                SecurityContextHolder.getContext().setAuthentication(auth);
-            } catch (Exception e) {
-                SecurityContextHolder.clearContext();
+
+
+        String userId = request.getHeader("X-User-Id");
+        String userEmail = request.getHeader("X-User-Email");
+
+        if (userId != null && userEmail != null) {
+            UsernamePasswordAuthenticationToken auth =
+                    new UsernamePasswordAuthenticationToken(userId, null, List.of());
+            SecurityContextHolder.getContext().setAuthentication(auth);
+        } else {
+
+            String header = request.getHeader("Authorization");
+            if (header != null && header.startsWith("Bearer ")) {
+                try {
+                    String token = header.substring(7);
+                    Key key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+                    Claims claims = Jwts.parserBuilder().setSigningKey(key).build()
+                            .parseClaimsJws(token).getBody();
+                    String email = claims.getSubject();
+                    UsernamePasswordAuthenticationToken auth =
+                            new UsernamePasswordAuthenticationToken(email, null, List.of());
+                    SecurityContextHolder.getContext().setAuthentication(auth);
+                } catch (Exception e) {
+                    SecurityContextHolder.clearContext();
+                }
             }
         }
         chain.doFilter(request, response);
