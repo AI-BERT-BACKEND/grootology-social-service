@@ -26,16 +26,36 @@ class AvailabilityServiceTest {
     private final UUID userId = UUID.randomUUID();
 
     @Test
-    void saveConfig_validInput_savesAndReturns() {
+    void saveConfig_newConfig_insertsAndReturns() {
         AvailabilityConfigRequestDTO dto = mock(AvailabilityConfigRequestDTO.class);
         when(dto.getVisibility()).thenReturn(VisibilityLevel.PUBLIC);
         when(dto.getAuthorizedFriends()).thenReturn(null);
+        when(repository.findByUserId(userId)).thenReturn(Optional.empty());
         when(repository.save(any())).thenAnswer(i -> i.getArgument(0));
 
         AvailabilityConfig result = availabilityService.saveConfig(userId, dto);
 
         assertNotNull(result);
+        assertNull(result.getId());
         assertEquals(VisibilityLevel.PUBLIC, result.getVisibility());
+    }
+
+    @Test
+    void saveConfig_existingConfig_reusesId() {
+        UUID existingId = UUID.randomUUID();
+        AvailabilityConfig existing = AvailabilityConfig.builder()
+                .id(existingId).userId(userId)
+                .visibility(VisibilityLevel.PRIVATE).build();
+        AvailabilityConfigRequestDTO dto = mock(AvailabilityConfigRequestDTO.class);
+        when(dto.getVisibility()).thenReturn(VisibilityLevel.SPECIFIC);
+        when(dto.getAuthorizedFriends()).thenReturn(null);
+        when(repository.findByUserId(userId)).thenReturn(Optional.of(existing));
+        when(repository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        AvailabilityConfig result = availabilityService.saveConfig(userId, dto);
+
+        assertEquals(existingId, result.getId());
+        assertEquals(VisibilityLevel.SPECIFIC, result.getVisibility());
     }
 
     @Test
