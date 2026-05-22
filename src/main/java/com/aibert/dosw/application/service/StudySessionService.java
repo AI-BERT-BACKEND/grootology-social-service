@@ -31,8 +31,8 @@ public class StudySessionService implements StudySessionUseCase {
         List<UUID> participants = new ArrayList<>(request.getParticipantIds());
         participants.add(creatorId);
 
+        // Sin .id(...): se deja en null para que JPA haga INSERT y genere el id (@GeneratedValue).
         StudySession session = repository.save(StudySession.builder()
-                .id(UUID.randomUUID())
                 .creatorId(creatorId)
                 .topic(request.getTopic())
                 .scheduledAt(request.getScheduledAt())
@@ -88,13 +88,13 @@ public class StudySessionService implements StudySessionUseCase {
                 notificationPublisher.publish(NotificationEvent.builder()
                         .userId(participantId)
                         .type("STUDY_SESSION_INVITE")
-                        .title("Nueva invitación a sesión de estudio")
-                        .message("Te han invitado a una sesión de estudio sobre: " + session.getTopic())
+                        .title("Nueva invitacion a sesion de estudio")
+                        .message("Te han invitado a una sesion de estudio sobre: " + session.getTopic())
                         .severity("INFO")
                         .relatedEntityId(session.getId())
                         .build());
             } catch (Exception e) {
-                log.error("No se pudo publicar notificación para participantId={} sessionId={}: {}",
+                log.error("No se pudo publicar notificacion para participantId={} sessionId={}: {}",
                         participantId, session.getId(), e.getMessage());
             }
         }
