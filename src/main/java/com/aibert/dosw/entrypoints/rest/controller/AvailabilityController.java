@@ -32,6 +32,7 @@ public class AvailabilityController {
     @ApiResponse(responseCode = "200", description = "Visibility settings saved successfully")
     @ApiResponse(responseCode = "400", description = "Invalid visibility level or request body")
     @ApiResponse(responseCode = "401", description = "Missing or invalid JWT token")
+    @ApiResponse(responseCode = "403", description = "Authenticated user is not allowed to access this resource")
     @PutMapping("/{userId}")
     public ResponseEntity<AvailabilityConfig> saveConfig(
             @Parameter(description = "UUID of the user", example = "a1b2c3d4-e5f6-7890-abcd-ef1234567890", schema = @Schema(type = "string", format = "uuid"))
@@ -47,6 +48,7 @@ public class AvailabilityController {
     )
     @ApiResponse(responseCode = "200", description = "Visibility settings retrieved successfully")
     @ApiResponse(responseCode = "401", description = "Missing or invalid JWT token")
+    @ApiResponse(responseCode = "403", description = "Authenticated user is not allowed to access this resource")
     @ApiResponse(responseCode = "404", description = "User not found")
     @GetMapping("/{userId}")
     public ResponseEntity<AvailabilityConfig> getConfig(
