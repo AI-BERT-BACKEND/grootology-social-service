@@ -66,11 +66,33 @@ public class SecurityConfig {
     @Bean
     public OpenAPI openAPI() {
         return new OpenAPI()
-                .info(new Info().title("Social Service API").version("1.0.0"))
-                .addSecurityItem(new SecurityRequirement().addList("Bearer"))
-                .components(new Components().addSecuritySchemes("Bearer",
+                .info(new Info()
+                        .title("Social Service API — AIBERT")
+                        .version("1.0.0")
+                        .description("""
+                                Manages the social features of the AIBERT platform, enabling students to connect, coordinate study sessions and share availability.
+
+                                Key responsibilities:
+                                - Friend invitations and referral links (R01)
+                                - Connection requests between registered users (R02)
+                                - Availability and privacy settings (R03)
+                                - Collaborative study sessions (R04)
+                                - Real-time presence and chat (R05)
+                                - Social panel and user search (R06)
+
+                                Kafka topics published:
+                                - `social.notification.events` — connection accepted, study session created
+
+                                Authentication: all endpoints require a Bearer JWT token issued by the auth service. Use the Authorize button to set your token.
+
+                                Local testing: see `swagger-tests/swagger-tests-guide.md` in the repository for ready-to-paste curl commands and a JWT token generation guide.
+
+                                Contact Grootyology Team
+                                """))
+                .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
+                .components(new Components().addSecuritySchemes("bearerAuth",
                         new SecurityScheme()
-                                .name("Bearer")
+                                .name("bearerAuth")
                                 .type(SecurityScheme.Type.HTTP)
                                 .scheme("bearer")
                                 .bearerFormat("JWT")));
