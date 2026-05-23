@@ -42,13 +42,13 @@ public class AvailabilityController {
             @Parameter(
                     in = ParameterIn.HEADER,
                     name = "X-User-Id",
-                    description = "Authenticated user UUID. Use this in Swagger when testing directly without a gateway-issued JWT.",
+                    description = "Authenticated user UUID. Required in Swagger when testing directly without a Bearer JWT.",
                     example = "a1b2c3d4-e5f6-7890-abcd-ef1234567890")
             @RequestHeader(value = "X-User-Id", required = false) String authenticatedUserId,
             @Parameter(
                     in = ParameterIn.HEADER,
                     name = "X-User-Email",
-                    description = "Authenticated user email. Use this in Swagger when testing directly without a gateway-issued JWT.",
+                    description = "Optional authenticated user email. X-User-Id is enough for Swagger testing.",
                     example = "user@test.com")
             @RequestHeader(value = "X-User-Email", required = false) String authenticatedUserEmail) {
         return ResponseEntity.ok(availabilityUseCase.saveConfig(userId, request));
@@ -70,13 +70,13 @@ public class AvailabilityController {
             @Parameter(
                     in = ParameterIn.HEADER,
                     name = "X-User-Id",
-                    description = "Authenticated user UUID. Use this in Swagger when testing directly without a gateway-issued JWT.",
+                    description = "Authenticated user UUID. Required in Swagger when testing directly without a Bearer JWT.",
                     example = "a1b2c3d4-e5f6-7890-abcd-ef1234567890")
             @RequestHeader(value = "X-User-Id", required = false) String authenticatedUserId,
             @Parameter(
                     in = ParameterIn.HEADER,
                     name = "X-User-Email",
-                    description = "Authenticated user email. Use this in Swagger when testing directly without a gateway-issued JWT.",
+                    description = "Optional authenticated user email. X-User-Id is enough for Swagger testing.",
                     example = "user@test.com")
             @RequestHeader(value = "X-User-Email", required = false) String authenticatedUserEmail) {
         return ResponseEntity.ok(availabilityUseCase.getConfig(userId));
