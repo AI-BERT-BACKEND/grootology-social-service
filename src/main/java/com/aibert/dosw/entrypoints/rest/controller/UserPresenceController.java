@@ -11,11 +11,13 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
+@Slf4j
 @Tag(name = "User Presence", description = "Online/offline status for users: heartbeat and real-time status check")
 @RestController
 @RequestMapping("/api/social/users")
@@ -37,6 +39,7 @@ public class UserPresenceController {
             @Parameter(description = "UUID of the user", example = "a1b2c3d4-e5f6-7890-abcd-ef1234567890", schema = @Schema(type = "string", format = "uuid"))
             @PathVariable UUID userId,
             @Valid @RequestBody HeartbeatRequestDTO request) {
+        log.debug("PUT /users/{}/heartbeat", userId);
         return ResponseEntity.ok(userPresenceUseCase.heartbeat(userId, request.getEmail(), request.getName(), request.getAvatarUrl()));
     }
 
@@ -52,6 +55,7 @@ public class UserPresenceController {
     public ResponseEntity<UserPresenceResponseDTO> getStatus(
             @Parameter(description = "UUID of the user", example = "a1b2c3d4-e5f6-7890-abcd-ef1234567890", schema = @Schema(type = "string", format = "uuid"))
             @PathVariable UUID userId) {
+        log.info("GET /users/{}/status", userId);
         return ResponseEntity.ok(userPresenceUseCase.getStatus(userId));
     }
 }

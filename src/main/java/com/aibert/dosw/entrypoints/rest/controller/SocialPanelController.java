@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
+@Slf4j
 @Tag(name = "Social Panel", description = "Manage the central social hub: presence status, available actions and chat history. (R06)")
 @RestController
 @RequestMapping("/api/social/users")
@@ -40,6 +42,7 @@ public class SocialPanelController {
             @Parameter(description = "UUID of the user", example = "a1b2c3d4-e5f6-7890-abcd-ef1234567890", schema = @Schema(type = "string", format = "uuid"))
             @PathVariable UUID userId,
             @RequestParam(required = false) SocialAction action) {
+        log.info("GET /users/{}/panel - action={}", userId, action);
         return ResponseEntity.ok(socialPanelUseCase.getPanel(userId, action));
     }
 }

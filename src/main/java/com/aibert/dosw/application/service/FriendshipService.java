@@ -10,12 +10,14 @@ import com.aibert.dosw.domain.ports.in.FriendshipUseCase;
 import com.aibert.dosw.domain.ports.out.FriendshipRepositoryPort;
 import com.aibert.dosw.domain.ports.out.UserPresenceRepositoryPort;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FriendshipService implements FriendshipUseCase {
@@ -25,18 +27,24 @@ public class FriendshipService implements FriendshipUseCase {
 
     @Override
     public List<FriendshipResponseDTO> listFriends(UUID userId, OnlineStatus statusFilter) {
-        return friendshipRepository.findByUserId(userId).stream()
+        log.info("Listing friends for userId={} statusFilter={}", userId, statusFilter);
+        List<FriendshipResponseDTO> result = friendshipRepository.findByUserId(userId).stream()
                 .map(f -> enrichFriendship(f, userId))
                 .filter(dto -> statusFilter == null || dto.getPresenceStatus().getStatus() == statusFilter)
                 .collect(Collectors.toList());
+        log.debug("Found {} friends for userId={}", result.size(), userId);
+        return result;
     }
 
     @Override
     public void removeFriend(UUID userId, UUID friendId) {
+        log.info("Removing friendship between userId={} and friendId={}", userId, friendId);
         if (!friendshipRepository.existsByUserIds(userId, friendId)) {
+            log.warn("Friendship not found between userId={} and friendId={}", userId, friendId);
             throw new ConnectionRequestException("No existe una amistad entre estos usuarios");
         }
         friendshipRepository.deleteByUserIds(userId, friendId);
+        log.debug("Friendship removed between userId={} and friendId={}", userId, friendId);
     }
 
     private FriendshipResponseDTO enrichFriendship(Friendship f, UUID userId) {

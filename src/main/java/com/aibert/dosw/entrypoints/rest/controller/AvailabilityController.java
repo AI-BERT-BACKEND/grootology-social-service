@@ -12,11 +12,13 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
+@Slf4j
 @Tag(name = "Availability", description = "Manage profile visibility settings: control who can find you in searches (PUBLIC / PRIVATE / SPECIFIC). (R03)")
 @RestController
 @RequestMapping("/api/social/availability")
@@ -52,6 +54,7 @@ public class AvailabilityController {
                     description = "Optional authenticated user email. X-User-Id is enough for Swagger testing.",
                     example = "user@test.com")
             @RequestHeader(value = "X-User-Email", required = false) String authenticatedUserEmail) {
+        log.info("PUT /availability/{} - visibility={}", userId, request.getVisibility());
         return ResponseEntity.ok(availabilityUseCase.saveConfig(userId, request));
     }
 
@@ -81,6 +84,7 @@ public class AvailabilityController {
                     description = "Optional authenticated user email. X-User-Id is enough for Swagger testing.",
                     example = "user@test.com")
             @RequestHeader(value = "X-User-Email", required = false) String authenticatedUserEmail) {
+        log.info("GET /availability/{}", userId);
         return ResponseEntity.ok(availabilityUseCase.getConfig(userId));
     }
 }

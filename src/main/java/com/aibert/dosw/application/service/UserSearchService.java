@@ -13,12 +13,14 @@ import com.aibert.dosw.domain.ports.out.ConnectionRequestRepositoryPort;
 import com.aibert.dosw.domain.ports.out.FriendshipRepositoryPort;
 import com.aibert.dosw.domain.ports.out.UserPresenceRepositoryPort;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserSearchService implements UserSearchUseCase {
@@ -32,11 +34,14 @@ public class UserSearchService implements UserSearchUseCase {
     public List<UserSearchResultDTO> search(String query, UUID requesterId) {
         if (query == null || query.isBlank()) return List.of();
 
-        return userPresenceRepository.searchByNameOrEmail(query.trim(), requesterId)
+        log.info("Searching users with query='{}' requesterId={}", query, requesterId);
+        List<UserSearchResultDTO> results = userPresenceRepository.searchByNameOrEmail(query.trim(), requesterId)
                 .stream()
                 .filter(u -> isVisibleTo(u.getUserId(), requesterId))
                 .map(u -> buildResult(u, requesterId))
                 .collect(Collectors.toList());
+        log.debug("Search returned {} results for query='{}'", results.size(), query);
+        return results;
     }
 
     private boolean isVisibleTo(UUID targetUserId, UUID requesterId) {

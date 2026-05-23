@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Tag(name = "Study Session Invites", description = "Retrieve pending study session invitations for a participant user. (R04)")
 @RestController
 @RequestMapping("/api/social/users")
@@ -37,6 +39,7 @@ public class StudyInviteController {
     public ResponseEntity<List<StudySessionResponseDTO>> getPendingInvites(
             @Parameter(description = "UUID of the participant user", example = "a1b2c3d4-e5f6-7890-abcd-ef1234567890", schema = @Schema(type = "string", format = "uuid"))
             @PathVariable UUID userId) {
+        log.info("GET /users/{}/study-invites/pending", userId);
         return ResponseEntity.ok(studySessionUseCase.getPendingInvitesForUser(userId));
     }
 }

@@ -13,12 +13,14 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 import java.util.UUID;
 
+@Slf4j
 @Tag(name = "Invitations", description = "Manage referral links for external users and code redemption with points. (R01)")
 @RestController
 @RequestMapping("/api/social/invitations")
@@ -38,6 +40,7 @@ public class InvitationController {
     public ResponseEntity<InviteResponseDTO> getReferralLink(
             @Parameter(description = "UUID of the user", example = "a1b2c3d4-e5f6-7890-abcd-ef1234567890", schema = @Schema(type = "string", format = "uuid"))
             @PathVariable UUID userId) {
+        log.info("GET /invitations/{}/link", userId);
         return ResponseEntity.ok(invitationUseCase.getOrCreateReferralLink(userId));
     }
 
@@ -54,7 +57,9 @@ public class InvitationController {
             @Parameter(description = "UUID of the user sending the invitations", example = "a1b2c3d4-e5f6-7890-abcd-ef1234567890", schema = @Schema(type = "string", format = "uuid"))
             @PathVariable UUID userId,
             @Valid @RequestBody InviteFriendsRequestDTO request) {
+        log.info("POST /invitations/{}/send - emailCount={}", userId, request.getEmails() != null ? request.getEmails().size() : 0);
         invitationUseCase.sendInvitations(userId, request);
+        log.debug("Invitations sent successfully for userId={}", userId);
         return ResponseEntity.ok(Map.of("message", "Invitations sent successfully."));
     }
 
@@ -72,6 +77,7 @@ public class InvitationController {
             @Parameter(description = "Referral code string", example = "INV-A1B2C3", schema = @Schema(type = "string"))
             @PathVariable String code,
             @Valid @RequestBody RedeemReferralCodeRequestDTO request) {
+        log.info("POST /invitations/{}/redeem - newUserId={}", code, request.getNewUserId());
         return ResponseEntity.ok(invitationUseCase.redeemReferralCode(code, request.getNewUserId()));
     }
 }
