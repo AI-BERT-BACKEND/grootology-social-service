@@ -5,6 +5,7 @@ import com.aibert.dosw.domain.model.user.AvailabilityConfig;
 import com.aibert.dosw.domain.ports.in.AvailabilityUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -37,7 +38,19 @@ public class AvailabilityController {
     public ResponseEntity<AvailabilityConfig> saveConfig(
             @Parameter(description = "UUID of the user", example = "a1b2c3d4-e5f6-7890-abcd-ef1234567890", schema = @Schema(type = "string", format = "uuid"))
             @PathVariable UUID userId,
-            @Valid @RequestBody AvailabilityConfigRequestDTO request) {
+            @Valid @RequestBody AvailabilityConfigRequestDTO request,
+            @Parameter(
+                    in = ParameterIn.HEADER,
+                    name = "X-User-Id",
+                    description = "Authenticated user UUID. Use this in Swagger when testing directly without a gateway-issued JWT.",
+                    example = "a1b2c3d4-e5f6-7890-abcd-ef1234567890")
+            @RequestHeader(value = "X-User-Id", required = false) String authenticatedUserId,
+            @Parameter(
+                    in = ParameterIn.HEADER,
+                    name = "X-User-Email",
+                    description = "Authenticated user email. Use this in Swagger when testing directly without a gateway-issued JWT.",
+                    example = "user@test.com")
+            @RequestHeader(value = "X-User-Email", required = false) String authenticatedUserEmail) {
         return ResponseEntity.ok(availabilityUseCase.saveConfig(userId, request));
     }
 
@@ -53,7 +66,19 @@ public class AvailabilityController {
     @GetMapping("/{userId}")
     public ResponseEntity<AvailabilityConfig> getConfig(
             @Parameter(description = "UUID of the user", example = "a1b2c3d4-e5f6-7890-abcd-ef1234567890", schema = @Schema(type = "string", format = "uuid"))
-            @PathVariable UUID userId) {
+            @PathVariable UUID userId,
+            @Parameter(
+                    in = ParameterIn.HEADER,
+                    name = "X-User-Id",
+                    description = "Authenticated user UUID. Use this in Swagger when testing directly without a gateway-issued JWT.",
+                    example = "a1b2c3d4-e5f6-7890-abcd-ef1234567890")
+            @RequestHeader(value = "X-User-Id", required = false) String authenticatedUserId,
+            @Parameter(
+                    in = ParameterIn.HEADER,
+                    name = "X-User-Email",
+                    description = "Authenticated user email. Use this in Swagger when testing directly without a gateway-issued JWT.",
+                    example = "user@test.com")
+            @RequestHeader(value = "X-User-Email", required = false) String authenticatedUserEmail) {
         return ResponseEntity.ok(availabilityUseCase.getConfig(userId));
     }
 }

@@ -7,6 +7,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -19,6 +20,7 @@ import java.security.Key;
 import java.util.List;
 
 @Component
+@Slf4j
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     @Value("${jwt.secret}")
@@ -32,10 +34,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String userId = request.getHeader("X-User-Id");
         String userEmail = request.getHeader("X-User-Email");
 
-        if (userId != null && userEmail != null) {
+        if (userId != null && !userId.isBlank()) {
             UsernamePasswordAuthenticationToken auth =
                     new UsernamePasswordAuthenticationToken(userId, null, List.of());
             SecurityContextHolder.getContext().setAuthentication(auth);
+            log.debug("Authenticated request with X-User-Id header for path={}", request.getRequestURI());
         } else {
 
             String header = request.getHeader("Authorization");
@@ -49,9 +52,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     UsernamePasswordAuthenticationToken auth =
                             new UsernamePasswordAuthenticationToken(email, null, List.of());
                     SecurityContextHolder.getContext().setAuthentication(auth);
+                    log.debug("Authenticated request with Bearer token for path={}", request.getRequestURI());
                 } catch (Exception e) {
                     SecurityContextHolder.clearContext();
+                    log.warn("JWT authentication failed for path={}: {}", request.getRequestURI(), e.getMessage());
                 }
+            } else {
+                log.debug("No authentication headers found for path={}", request.getRequestURI());
             }
         }
         chain.doFilter(request, response);
