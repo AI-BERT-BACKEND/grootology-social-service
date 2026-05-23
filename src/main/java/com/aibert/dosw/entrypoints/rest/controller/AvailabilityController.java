@@ -67,20 +67,7 @@ public class AvailabilityController {
     @GetMapping("/{userId}")
     public ResponseEntity<AvailabilityConfig> getConfig(
             @Parameter(description = "UUID of the user", example = "a1b2c3d4-e5f6-7890-abcd-ef1234567890", schema = @Schema(type = "string", format = "uuid"))
-            @PathVariable UUID userId,
-            @Parameter(
-                    in = ParameterIn.HEADER,
-                    name = "X-User-Id",
-                    description = "Authenticated user UUID. Required in Swagger when testing directly without a Bearer JWT.",
-                    required = true,
-                    example = "a1b2c3d4-e5f6-7890-abcd-ef1234567890")
-            @RequestHeader(value = "X-User-Id", required = false) String authenticatedUserId,
-            @Parameter(
-                    in = ParameterIn.HEADER,
-                    name = "X-User-Email",
-                    description = "Optional authenticated user email. X-User-Id is enough for Swagger testing.",
-                    example = "user@test.com")
-            @RequestHeader(value = "X-User-Email", required = false) String authenticatedUserEmail) {
+            @PathVariable UUID userId) {
         return ResponseEntity.ok(availabilityUseCase.getConfig(userId));
     }
 }
