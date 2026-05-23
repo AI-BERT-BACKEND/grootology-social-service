@@ -48,8 +48,10 @@ jobs:
     env:
       SPRING_PROFILES_ACTIVE: test
       DB_URL: jdbc:h2:mem:testdb
+      DB_USER: sa
       DB_USERNAME: sa
       DB_PASSWORD: sa
+      JWT_SECRET: test_jwt_secret_min_32_chars_value
 
     steps:
       - name: Checkout repository
@@ -94,8 +96,10 @@ jobs:
     env:
       SPRING_PROFILES_ACTIVE: test
       DB_URL: jdbc:h2:mem:testdb
+      DB_USER: sa
       DB_USERNAME: sa
       DB_PASSWORD: sa
+      JWT_SECRET: test_jwt_secret_min_32_chars_value
 
     steps:
       - name: Checkout repository
