@@ -43,6 +43,7 @@ public class AvailabilityController {
                     in = ParameterIn.HEADER,
                     name = "X-User-Id",
                     description = "Authenticated user UUID. Required in Swagger when testing directly without a Bearer JWT.",
+                    required = true,
                     example = "a1b2c3d4-e5f6-7890-abcd-ef1234567890")
             @RequestHeader(value = "X-User-Id", required = false) String authenticatedUserId,
             @Parameter(
@@ -71,6 +72,7 @@ public class AvailabilityController {
                     in = ParameterIn.HEADER,
                     name = "X-User-Id",
                     description = "Authenticated user UUID. Required in Swagger when testing directly without a Bearer JWT.",
+                    required = true,
                     example = "a1b2c3d4-e5f6-7890-abcd-ef1234567890")
             @RequestHeader(value = "X-User-Id", required = false) String authenticatedUserId,
             @Parameter(
