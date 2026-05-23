@@ -6,11 +6,13 @@ import com.aibert.dosw.domain.model.user.UserPresence;
 import com.aibert.dosw.domain.ports.in.UserPresenceUseCase;
 import com.aibert.dosw.domain.ports.out.UserPresenceRepositoryPort;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserPresenceService implements UserPresenceUseCase {
@@ -19,6 +21,7 @@ public class UserPresenceService implements UserPresenceUseCase {
 
     @Override
     public UserPresenceResponseDTO heartbeat(UUID userId, String email, String name, String avatarUrl) {
+        log.debug("Heartbeat received for userId={}", userId);
         UserPresence updated = presenceRepository.findByUserId(userId)
                 .map(existing -> UserPresence.builder()
                         .id(existing.getId())
@@ -41,6 +44,7 @@ public class UserPresenceService implements UserPresenceUseCase {
 
     @Override
     public UserPresenceResponseDTO getStatus(UUID userId) {
+        log.debug("Getting presence status for userId={}", userId);
         return presenceRepository.findByUserId(userId)
                 .map(this::toDTO)
                 .orElse(UserPresenceResponseDTO.builder()

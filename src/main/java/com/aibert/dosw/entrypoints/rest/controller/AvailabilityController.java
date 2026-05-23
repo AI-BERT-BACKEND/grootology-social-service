@@ -11,11 +11,13 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
+@Slf4j
 @Tag(name = "Availability", description = "Manage profile visibility settings: control who can find you in searches (PUBLIC / PRIVATE / SPECIFIC). (R03)")
 @RestController
 @RequestMapping("/api/social/availability")
@@ -38,6 +40,7 @@ public class AvailabilityController {
             @Parameter(description = "UUID of the user", example = "a1b2c3d4-e5f6-7890-abcd-ef1234567890", schema = @Schema(type = "string", format = "uuid"))
             @PathVariable UUID userId,
             @Valid @RequestBody AvailabilityConfigRequestDTO request) {
+        log.info("PUT /availability/{} - visibility={}", userId, request.getVisibility());
         return ResponseEntity.ok(availabilityUseCase.saveConfig(userId, request));
     }
 
@@ -54,6 +57,7 @@ public class AvailabilityController {
     public ResponseEntity<AvailabilityConfig> getConfig(
             @Parameter(description = "UUID of the user", example = "a1b2c3d4-e5f6-7890-abcd-ef1234567890", schema = @Schema(type = "string", format = "uuid"))
             @PathVariable UUID userId) {
+        log.info("GET /availability/{}", userId);
         return ResponseEntity.ok(availabilityUseCase.getConfig(userId));
     }
 }

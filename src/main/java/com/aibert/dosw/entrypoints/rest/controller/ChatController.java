@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Tag(name = "Chat", description = "Manage real-time messaging between friends: send, read and delete messages. (R05)")
 @RestController
 @RequestMapping("/api/social/chat")
@@ -40,8 +42,10 @@ public class ChatController {
             @Parameter(description = "UUID of the sender", example = "a1b2c3d4-e5f6-7890-abcd-ef1234567890", schema = @Schema(type = "string", format = "uuid"))
             @PathVariable UUID senderId,
             @Valid @RequestBody SendMessageRequestDTO request) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(chatUseCase.sendMessage(senderId, request));
+        log.info("POST /chat/{}/messages - receiverId={}", senderId, request.getReceiverId());
+        ChatMessageResponseDTO response = chatUseCase.sendMessage(senderId, request);
+        log.debug("Message sent: messageId={}", response.getId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @Operation(
@@ -60,6 +64,7 @@ public class ChatController {
             @PathVariable UUID friendId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
+        log.info("GET /chat/conversations/{}/{} - page={} size={}", userId, friendId, page, size);
         return ResponseEntity.ok(chatUseCase.getConversation(userId, friendId, page, size));
     }
 
@@ -74,6 +79,7 @@ public class ChatController {
     public ResponseEntity<List<ConversationSummaryResponseDTO>> getConversations(
             @Parameter(description = "UUID of the user", example = "a1b2c3d4-e5f6-7890-abcd-ef1234567890", schema = @Schema(type = "string", format = "uuid"))
             @PathVariable UUID userId) {
+        log.info("GET /chat/conversations/{}", userId);
         return ResponseEntity.ok(chatUseCase.getConversations(userId));
     }
 
@@ -91,6 +97,7 @@ public class ChatController {
             @Parameter(description = "UUID of the message", example = "a1b2c3d4-e5f6-7890-abcd-ef1234567890", schema = @Schema(type = "string", format = "uuid"))
             @PathVariable UUID messageId,
             @RequestParam UUID readerId) {
+        log.info("PUT /chat/messages/{}/read - readerId={}", messageId, readerId);
         return ResponseEntity.ok(chatUseCase.markAsRead(messageId, readerId));
     }
 
@@ -107,6 +114,7 @@ public class ChatController {
             @Parameter(description = "UUID of the message", example = "a1b2c3d4-e5f6-7890-abcd-ef1234567890", schema = @Schema(type = "string", format = "uuid"))
             @PathVariable UUID messageId,
             @RequestParam UUID userId) {
+        log.info("DELETE /chat/messages/{} - userId={}", messageId, userId);
         chatUseCase.deleteMessage(messageId, userId);
         return ResponseEntity.noContent().build();
     }

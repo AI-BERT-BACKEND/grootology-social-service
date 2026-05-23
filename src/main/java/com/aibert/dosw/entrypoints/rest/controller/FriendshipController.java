@@ -10,12 +10,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Tag(name = "Friends", description = "Manage the friends list: retrieve with presence status and remove friendships. (R02, R05)")
 @RestController
 @RequestMapping("/api/social/friends")
@@ -36,6 +38,7 @@ public class FriendshipController {
             @Parameter(description = "UUID of the user", example = "a1b2c3d4-e5f6-7890-abcd-ef1234567890", schema = @Schema(type = "string", format = "uuid"))
             @PathVariable UUID userId,
             @RequestParam(required = false) OnlineStatus status) {
+        log.info("GET /friends/{} - statusFilter={}", userId, status);
         return ResponseEntity.ok(friendshipUseCase.listFriends(userId, status));
     }
 
@@ -53,6 +56,7 @@ public class FriendshipController {
             @PathVariable UUID userId,
             @Parameter(description = "UUID of the friend to remove", example = "b2c3d4e5-f6a7-8901-bcde-f12345678901", schema = @Schema(type = "string", format = "uuid"))
             @PathVariable UUID friendId) {
+        log.info("DELETE /friends/{}/{}", userId, friendId);
         friendshipUseCase.removeFriend(userId, friendId);
         return ResponseEntity.noContent().build();
     }

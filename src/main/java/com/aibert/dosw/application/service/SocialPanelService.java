@@ -11,11 +11,13 @@ import com.aibert.dosw.domain.ports.in.SocialPanelUseCase;
 import com.aibert.dosw.domain.ports.in.StudySessionUseCase;
 import com.aibert.dosw.domain.ports.in.UserPresenceUseCase;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SocialPanelService implements SocialPanelUseCase {
@@ -29,6 +31,7 @@ public class SocialPanelService implements SocialPanelUseCase {
 
     @Override
     public SocialPanelResponseDTO getPanel(UUID userId, SocialAction action) {
+        log.info("Building social panel for userId={} action={}", userId, action);
         SocialAction selectedAction = action != null ? action : SocialAction.LISTAR;
 
         return SocialPanelResponseDTO.builder()

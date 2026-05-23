@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Tag(name = "Study Sessions", description = "Create, respond to and list collaborative study sessions")
 @RestController
 @RequestMapping("/api/social/sessions")
@@ -39,8 +41,10 @@ public class StudySessionController {
             @Parameter(description = "UUID of the session creator", example = "a1b2c3d4-e5f6-7890-abcd-ef1234567890", schema = @Schema(type = "string", format = "uuid"))
             @PathVariable UUID creatorId,
             @Valid @RequestBody CreateStudySessionRequestDTO request) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(studySessionUseCase.createSession(creatorId, request));
+        log.info("POST /sessions/{} - topic={} participants={}", creatorId, request.getTopic(), request.getParticipantIds() != null ? request.getParticipantIds().size() : 0);
+        StudySessionResponseDTO response = studySessionUseCase.createSession(creatorId, request);
+        log.debug("Study session created: sessionId={}", response.getId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @Operation(
@@ -59,6 +63,7 @@ public class StudySessionController {
             @Parameter(description = "UUID of the responding user", example = "b2c3d4e5-f6a7-8901-bcde-f12345678901", schema = @Schema(type = "string", format = "uuid"))
             @RequestParam UUID userId,
             @RequestParam boolean accept) {
+        log.info("PUT /sessions/{}/respond - userId={} accept={}", sessionId, userId, accept);
         return ResponseEntity.ok(studySessionUseCase.respondToSession(sessionId, userId, accept));
     }
 
@@ -73,6 +78,7 @@ public class StudySessionController {
     public ResponseEntity<List<StudySessionResponseDTO>> getSessionsForUser(
             @Parameter(description = "UUID of the user", example = "a1b2c3d4-e5f6-7890-abcd-ef1234567890", schema = @Schema(type = "string", format = "uuid"))
             @PathVariable UUID userId) {
+        log.info("GET /sessions/user/{}", userId);
         return ResponseEntity.ok(studySessionUseCase.getSessionsForUser(userId));
     }
 }

@@ -7,12 +7,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Tag(name = "User Search", description = "Search users by name or email while respecting their privacy settings (PUBLIC / PRIVATE / SPECIFIC)")
 @RestController
 @RequestMapping("/api/social/users")
@@ -32,6 +34,7 @@ public class UserSearchController {
     public ResponseEntity<List<UserSearchResultDTO>> search(
             @RequestParam String q,
             @RequestParam UUID requesterId) {
+        log.info("GET /users/search - q='{}' requesterId={}", q, requesterId);
         return ResponseEntity.ok(userSearchUseCase.search(q, requesterId));
     }
 }

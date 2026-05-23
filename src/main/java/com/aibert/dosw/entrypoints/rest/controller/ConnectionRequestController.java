@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Tag(name = "Connection Requests", description = "Manage friend requests: send, accept and reject between registered users in AI.BERT. (R02)")
 @RestController
 @RequestMapping("/api/social/connections")
@@ -39,8 +41,10 @@ public class ConnectionRequestController {
             @Parameter(description = "UUID of the sender", example = "a1b2c3d4-e5f6-7890-abcd-ef1234567890", schema = @Schema(type = "string", format = "uuid"))
             @PathVariable UUID senderId,
             @Valid @RequestBody SendConnectionRequestDTO request) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(connectionRequestUseCase.sendRequest(senderId, request));
+        log.info("POST /connections/{}/request - receiverId={}", senderId, request.getReceiverId());
+        ConnectionRequestResponseDTO response = connectionRequestUseCase.sendRequest(senderId, request);
+        log.debug("Connection request sent: requestId={}", response.getId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @Operation(
@@ -57,6 +61,7 @@ public class ConnectionRequestController {
             @Parameter(description = "UUID of the connection request", example = "a1b2c3d4-e5f6-7890-abcd-ef1234567890", schema = @Schema(type = "string", format = "uuid"))
             @PathVariable UUID requestId,
             @RequestParam UUID receiverId) {
+        log.info("PUT /connections/{}/accept - receiverId={}", requestId, receiverId);
         return ResponseEntity.ok(connectionRequestUseCase.acceptRequest(requestId, receiverId));
     }
 
@@ -74,6 +79,7 @@ public class ConnectionRequestController {
             @Parameter(description = "UUID of the connection request", example = "a1b2c3d4-e5f6-7890-abcd-ef1234567890", schema = @Schema(type = "string", format = "uuid"))
             @PathVariable UUID requestId,
             @RequestParam UUID receiverId) {
+        log.info("PUT /connections/{}/reject - receiverId={}", requestId, receiverId);
         return ResponseEntity.ok(connectionRequestUseCase.rejectRequest(requestId, receiverId));
     }
 
@@ -88,6 +94,7 @@ public class ConnectionRequestController {
     public ResponseEntity<List<ConnectionRequestResponseDTO>> getPendingRequests(
             @Parameter(description = "UUID of the receiver", example = "a1b2c3d4-e5f6-7890-abcd-ef1234567890", schema = @Schema(type = "string", format = "uuid"))
             @PathVariable UUID receiverId) {
+        log.info("GET /connections/pending/{}", receiverId);
         return ResponseEntity.ok(connectionRequestUseCase.getPendingRequestsForUser(receiverId));
     }
 
@@ -102,6 +109,7 @@ public class ConnectionRequestController {
     public ResponseEntity<List<ConnectionRequestResponseDTO>> getSentRequests(
             @Parameter(description = "UUID of the sender", example = "a1b2c3d4-e5f6-7890-abcd-ef1234567890", schema = @Schema(type = "string", format = "uuid"))
             @PathVariable UUID senderId) {
+        log.info("GET /connections/sent/{}", senderId);
         return ResponseEntity.ok(connectionRequestUseCase.getSentRequestsByUser(senderId));
     }
 }
